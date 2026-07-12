@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Results Publisher</title>
+    <!-- Remix Icon for Modern Vector Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- Local Dashboard Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- SIDEBAR NAVIGATION PANEL
+         Contains the brand logo, role navigation links (Admin, Subject Teacher, Class Teacher), 
+         and logged-in user profile indicator. -->
+    <aside>
+        <!-- Application Brand Logo Container -->
+        <div class="logo-container">
+            <img src="RiseUp Logo.png" class="logo-img" alt="RiseUp Logo">
+            <div class="logo-text">RiseUp College</div>
+        </div>
+        
+        <!-- Navigation Menu Links. Triggers switchPortal() switcher in app.js on click -->
+        <nav>
+            <div class="nav-link active" id="nav-admin" onclick="switchPortal('admin')">
+                <i class="ri-settings-4-line"></i>
+                <span>Admin Settings</span>
+            </div>
+            <div class="nav-link" id="nav-subject" onclick="switchPortal('subject')">
+                <i class="ri-book-open-line"></i>
+                <span>Subject Teacher</span>
+            </div>
+            <div class="nav-link" id="nav-class" onclick="switchPortal('class')">
+                <i class="ri-user-star-line"></i>
+                <span>Class Teacher</span>
+            </div>
+            <div class="nav-divider"></div>
+        </nav>
+        
+        <!-- Sidebar Footer displaying current dynamic profile details and logout -->
+        <div class="sidebar-footer" id="profile-footer" style="display: none; flex-direction: column; align-items: stretch; gap: 12px; border-top: 1px solid var(--glass-border); padding-top: 1.5rem; margin-top: auto; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="user-avatar" id="profile-avatar">AD</div>
+                <div class="user-info">
+                    <div class="user-name" id="profile-name">Admin User</div>
+                    <div class="user-role" id="profile-role">School Coordinator</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-icon" onclick="logout()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; margin-top: 5px;"><i class="ri-logout-box-line"></i> Logout</button>
+        </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE CONTAINER
+         Displays headers, active views, tables, forms, and report previews dynamically. -->
+    <main>
+        
+        <!-- GLOBAL APP HEADER
+             Displays dynamic page titles, summaries, term selectors, and database connectivity badges. -->
+        <header>
+            <div>
+                <h1 id="portal-title">Admin Configuration</h1>
+                <p class="header-meta" id="portal-subtitle">Manage school structures, students, and grading criteria</p>
+            </div>
+            <div class="header-actions">
+                <!-- Global Active Session Dropdown Selector. Updates active session state in app.js onchange -->
+                <div class="term-select-container">
+                    <label>Session:</label>
+                    <select id="global-session-select" onchange="onGlobalSessionChange()">
+                        <!-- Loaded dynamically -->
+                    </select>
+                </div>
+                <!-- Global Active Term Dropdown Selector. Updates active term state in app.js onchange -->
+                <div class="term-select-container">
+                    <label>Active Term:</label>
+                    <select id="global-term-select" onchange="onGlobalTermChange()">
+                        <option value="t1">First Term</option>
+                        <option value="t2">Second Term</option>
+                        <option value="t3">Third Term</option>
+                    </select>
+                </div>
+                <!-- Database Connectivity Badge Indicator -->
+                <span class="badge badge-success" id="db-status">Local Database Online</span>
+            </div>
+        </header>
+
+        <!-- 1. ADMIN CONFIGURATION PORTAL Panel
+             Displays high-level statistics cards, structure creation forms, and assessment weighting controllers. -->
+        <div id="panel-admin" class="panel">
+            
+            <!-- Statistics Metric Cards Display Grid -->
+            <div class="dashboard-grid">
+                <!-- Active Classes Count Widget -->
+                <div class="card">
+                    <div class="card-stat">
+                        <div>
+                            <div class="stat-value" id="stat-classes">0</div>
+                            <div class="stat-label">Active Classes</div>
+                        </div>
+                        <div class="stat-icon indigo">
+                            <i class="ri-community-line"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Active Subjects Count Widget -->
+                <div class="card">
+                    <div class="card-stat">
+                        <div>
+                            <div class="stat-value" id="stat-subjects">0</div>
+                            <div class="stat-label">Subjects Offered</div>
+                        </div>
+                        <div class="stat-icon emerald">
+                            <i class="ri-book-3-line"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Total Students Count Widget -->
+                <div class="card">
+                    <div class="card-stat">
+                        <div>
+                            <div class="stat-value" id="stat-students">0</div>
+                            <div class="stat-label">Total Students</div>
+                        </div>
+                        <div class="stat-icon amber">
+                            <i class="ri-group-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- School Configuration Setup Options Grid Layout -->
+            <div class="dashboard-grid" style="grid-template-columns: 2fr 1.2fr;">
+                
+                <!-- School Structures Setup Table Card -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Classes, Subjects, and Students Setup</h2>
+                    </div>
+                    
+                    <!-- Structural Action Buttons. Triggers modals and seeder calls -->
+                    <div class="filter-row">
+                        <button class="btn btn-primary" onclick="openModal('classModal')"><i class="ri-add-line"></i> Add Class</button>
+                        <button class="btn btn-primary" onclick="openModal('subjectModal')"><i class="ri-add-line"></i> Add Subject</button>
+                        <button class="btn btn-primary" onclick="openModal('studentModal')"><i class="ri-add-user-line"></i> Add Student</button>
+                        <button class="btn btn-secondary" onclick="openModal('sessionModal')"><i class="ri-history-line"></i> New Session</button>
+                        <button class="btn btn-secondary" onclick="seedMockData()"><i class="ri-magic-line"></i> Seed Demo Data</button>
+                    </div>
+
+                    <!-- Configured Classes Lists and Student Mappings Table -->
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Subjects Assigned</th>
+                                    <th>Students Count</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-body">
+                                <!-- Dynamically filled with classes and rows by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Term Weightings & Grading Scale Card -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Assessment Settings</h2>
+                    </div>
+                    <!-- Assessment Weights configuration form group -->
+                    <div class="form-group">
+                        <label>Continuous Assessment Weight (%)</label>
+                        <input type="number" id="ca-weight" value="40" min="0" max="100" onchange="updateAssessmentWeights()">
+                    </div>
+                    <div class="form-group">
+                        <label>Exam Weight (%)</label>
+                        <input type="number" id="exam-weight" value="60" min="0" max="100" disabled>
+                    </div>
+                    <div class="nav-divider" style="margin: 0.5rem 0;"></div>
+                    
+                    <!-- Configured Grading Letter scale references list -->
+                    <label>Grading Criteria</label>
+                    <div class="table-wrapper" style="border: none;">
+                        <table style="border: none;">
+                            <thead>
+                                <tr>
+                                    <th>Grade</th>
+                                    <th>Range</th>
+                                </tr>
+                            </thead>
+                            <tbody id="grading-scale-body">
+                                <!-- Populated dynamically by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. SUBJECT TEACHER PORTAL Panel
+             Provides filters to select a class/subject, input score fields, and run auto-gradings. -->
+        <div id="panel-subject" class="panel" style="display:none;">
+            <div class="panel-header">
+                <h2 class="panel-title">Subject Score Entry</h2>
+                <!-- Active completion badge status indicator -->
+                <span class="badge badge-warning" id="subject-entry-status">Selecting Subject...</span>
+            </div>
+            
+            <!-- Class and Subject Selection Filters Row -->
+            <div class="filter-row">
+                <div class="form-group">
+                    <label>Select Class</label>
+                    <select id="teacher-class-select" onchange="onTeacherClassChange()">
+                        <option value="">-- Choose Class --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Select Subject</label>
+                    <select id="teacher-subject-select" onchange="onTeacherSubjectChange()">
+                        <option value="">-- Choose Subject --</option>
+                    </select>
+                </div>
+                <!-- Saves entered student grades for the active class/subject/term on click -->
+                <div class="form-group action">
+                    <button class="btn btn-primary" onclick="saveSubjectScores()"><i class="ri-save-line"></i> Save Grades</button>
+                </div>
+            </div>
+
+            <!-- Student Scores Input Sheet Table wrapper -->
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Roll No</th>
+                            <th>Student Name</th>
+                            <th style="text-align: center;">Continuous Assessment (Max <span id="ca-max-label">40</span>)</th>
+                            <th style="text-align: center;">Exam Score (Max <span id="exam-max-label">60</span>)</th>
+                            <th style="text-align: center;">Total Score (100)</th>
+                            <th style="text-align: center;">Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="score-entry-table-body">
+                        <!-- Loaded dynamically by app.js when selections occur -->
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-secondary);">Please select a class and subject to input scores.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. CLASS TEACHER PORTAL Panel
+             Displays the class results master collation matrix, positional sorting, and printable report trigger actions. -->
+        <div id="panel-class" class="panel" style="display:none;">
+            <div class="panel-header">
+                <h2 class="panel-title">Class Results Collation</h2>
+            </div>
+            
+            <!-- Class Selection Filters and Batch Actions Row -->
+            <div class="filter-row">
+                <div class="form-group">
+                    <label>Select Your Class</label>
+                    <select id="class-teacher-select" onchange="loadCollationSheet()">
+                        <option value="">-- Choose Class --</option>
+                    </select>
+                </div>
+                <!-- Prints all report cards in a single batch on click and allows Class Teacher to register new students -->
+                <div class="form-group action" style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="openModal('studentModal')"><i class="ri-add-user-line"></i> Add Student</button>
+                    <button class="btn btn-secondary" onclick="printAllReportCards()"><i class="ri-printer-line"></i> Print All Reports</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Master Collation Matrix Sheet Table wrapper -->
+            <div class="table-wrapper collation-table-wrapper">
+                <table id="collation-table">
+                    <thead>
+                        <!-- Dynamically filled with student names and subject headers by app.js -->
+                    </thead>
+                    <tbody id="collation-table-body">
+                        <tr>
+                            <td style="text-align: center; color: var(--text-secondary);">Please select a class to load the collation sheet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. INDIVIDUAL REPORT CARD PREVIEW PANEL
+             Shows clean previews of report cards on the screen with PDF print actions. -->
+        <div id="panel-report-cards" class="panel" style="display:none;">
+            <div class="panel-header">
+                <!-- Back routing button to class collation list view -->
+                <button class="btn btn-secondary" id="report-back-btn" onclick="goBackToClassTeacher()"><i class="ri-arrow-left-line"></i> Back to Collation</button>
+                <h2 class="panel-title">Report Card Preview</h2>
+                <!-- Print Report Card / Save to PDF Callback Button -->
+                <button class="btn btn-primary" onclick="window.print()"><i class="ri-printer-line"></i> Print / Save as PDF</button>
+            </div>
+            <!-- Holds the dynamic compiled student report card card elements -->
+            <div class="report-card-container" id="report-card-container">
+                <!-- Report Card layout gets dynamically loaded here by app.js -->
+            </div>
+        </div>
+    </main>
+
+    <!-- FORM OVERLAY MODALS LAYOUTS
+         Dialogs used by Admin user to input new structures in localStorage -->
+    
+    <!-- Modal: Add Class Structure Form dialog -->
+    <div id="classModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Class</h3>
+            <div class="form-group">
+                <label>Class Name</label>
+                <input type="text" id="new-class-name" placeholder="e.g. JSS 1, SSS 3A">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal('classModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="addClass()">Add Class</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Subject Structure Form dialog -->
+    <div id="subjectModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Subject</h3>
+            <div class="form-group">
+                <label>Subject Name</label>
+                <input type="text" id="new-subject-name" placeholder="e.g. Mathematics, Chemistry">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal('subjectModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="addSubject()">Add Subject</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Student Form dialog -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Student</h3>
+            <div class="form-group">
+                <label>Student ID (Register Number)</label>
+                <input type="text" id="new-student-id" placeholder="e.g. RU-10A-005">
+            </div>
+            <div class="form-group">
+                <label>Student Full Name</label>
+                <input type="text" id="new-student-name" placeholder="e.g. John Doe">
+            </div>
+            <div class="form-group">
+                <label>Assign to Class</label>
+                <select id="new-student-class">
+                    <!-- Loaded dynamically from classes state -->
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal('studentModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="addStudent()">Add Student</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Create New Session Form dialog -->
+    <div id="sessionModal" class="modal">
+        <div class="modal-content">
+            <h3>Create New Academic Session</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; margin-bottom: 12px; line-height: 1.4;">
+                Starting a new session will archive current grades. Configured classes, subjects, and student lists will carry forward.
+            </p>
+            <div class="form-group">
+                <label>New Session Name</label>
+                <input type="text" id="new-session-name" placeholder="e.g. 2026/2027">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeModal('sessionModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createNewSession()">Create Session</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN PAGE OVERLAY -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <div class="login-logo">
+                <img src="RiseUp Logo.png" alt="RiseUp College Logo">
+                <h2>RiseUp College</h2>
+                <p>Results Publisher Portal</p>
+            </div>
+            <form onsubmit="onLoginSubmit(event)" class="login-form" style="margin-bottom: 1rem;">
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                <div id="login-error" class="login-error-msg">
+                    Invalid username or password!
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="ri-login-box-line"></i> Sign In</button>
+            </form>
+            <div class="login-help">
+                <div class="help-title"><i class="ri-information-line"></i> Default Credentials for Testing</div>
+                <ul style="list-style: none; padding: 0;">
+                    <li><strong>Admin:</strong> admin / adminpassword</li>
+                    <li><strong>Class Teacher:</strong> class_teacher / teacherpassword</li>
+                    <li><strong>Subject Teacher:</strong> subject_teacher / teacherpassword</li>
+                    <li><strong>Student (Seed):</strong> st1 / okafor <em>(password is lowercase last name)</em></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script File -->
+    <script src="app.js"></script>
+</body>
+</html>

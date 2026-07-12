@@ -1,0 +1,20 @@
+# Environment variables & secrets
+.env
+
+# Local SQLite databases
+*.db
+school.db
+
+# Python runtime environment cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local Virtual Environments
+.venv/
+venv/
+ENV/
+
+# OS metadata
+.DS_Store
+Thumbs.db

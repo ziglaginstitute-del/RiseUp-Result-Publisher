@@ -1,0 +1,939 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* ==========================================================================
+   CSS DESIGN SYSTEM VARIABLES & GLOBAL STYLES
+   Defines color scheme, font tokens, border radii, shadows, and base resets.
+   ========================================================================== */
+:root {
+    /* Color Palette */
+    --bg-primary: #0f172a;               /* Dark Slate background */
+    --bg-secondary: #1e293b;             /* Glass panels background slate */
+    --bg-tertiary: #334155;              /* Borders and default buttons */
+    --glass-bg: rgba(30, 41, 59, 0.7);   /* Translucent pane background */
+    --glass-border: rgba(255, 255, 255, 0.08); /* Card border highlight */
+    
+    /* Branding Accent Colors */
+    --accent-indigo: #6366f1;            /* Primary brand color */
+    --accent-indigo-hover: #4f46e5;      /* Primary button hover state */
+    --accent-emerald: #10b981;           /* Success / A Grade badge */
+    --accent-rose: #f43f5e;              /* Alert / F Grade badge */
+    --accent-amber: #f59e0b;             /* Warning / C Grade badge */
+    
+    /* Typography Colors */
+    --text-primary: #f8fafc;             /* Bright text for headings */
+    --text-secondary: #94a3b8;           /* Gray text for labels & descriptions */
+    --text-muted: #64748b;                /* Dimmed out text for empty states */
+    
+    /* Layout Tokens */
+    --font-sans: 'Outfit', sans-serif;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    
+    /* Effects and Animations */
+    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15); /* Accent box glow shadow */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+}
+
+/* Global Reset Rules */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Base Body Layout and Gradients */
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-primary);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+}
+
+/* ==========================================================================
+   SIDEBAR NAVIGATION LAYOUT
+   Vertical navigation menu fixed to the left side of the screen.
+   ========================================================================== */
+aside {
+    width: 280px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-right: 1px solid var(--glass-border);
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+}
+
+/* Sidebar Logo Header Section */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 3rem;
+}
+
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--accent-indigo), #8b5cf6);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.25rem;
+    box-shadow: var(--shadow-glow);
+}
+
+.logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    box-shadow: var(--shadow-glow);
+}
+
+.logo-text {
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+    background: linear-gradient(to right, #fff, var(--text-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Sidebar Navigation Items list */
+nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: var(--transition-fast);
+    cursor: pointer;
+}
+
+.nav-link i {
+    font-size: 1.2rem;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.nav-link.active {
+    background: var(--accent-indigo);
+    color: #fff;
+    box-shadow: var(--shadow-glow);
+}
+
+.nav-divider {
+    height: 1px;
+    background: var(--glass-border);
+    margin: 1.5rem 0;
+}
+
+/* Sidebar footer profile summary card */
+.sidebar-footer {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+.user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--accent-indigo);
+    border: 2px solid var(--accent-indigo);
+}
+
+.user-info .user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.user-info .user-role {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   MAIN WORKSPACE PANEL LAYOUT
+   Holds dynamic panels, metrics grids, tables, and views.
+   ========================================================================== */
+main {
+    margin-left: 280px;
+    flex: 1;
+    min-height: 100vh;
+    padding: 2rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.header-meta {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Header-actions layout displaying selectors and badges together */
+.header-actions {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.term-select-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.term-select-container label {
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+#global-term-select, #global-session-select {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    width: auto;
+    color: var(--text-primary);
+    border: 1px solid var(--glass-border);
+}
+
+/* ==========================================================================
+   GLASSMORPHISM WIDGET CARDS
+   Styled boxes with backing blur, highlights, and icons.
+   ========================================================================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.card-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.stat-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+
+.stat-icon.indigo {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--accent-indigo);
+}
+
+.stat-icon.emerald {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-emerald);
+}
+
+.stat-icon.amber {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--accent-amber);
+}
+
+.stat-icon.rose {
+    background: rgba(244, 63, 94, 0.15);
+    color: var(--accent-rose);
+}
+
+/* Glassmorphic Panel wrappers */
+.panel {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 1rem;
+}
+
+.panel-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   INPUTS & FORM CONTROLS
+   Sleek dark input fields, options lists, and textareas.
+   ========================================================================== */
+.filter-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-group.action {
+    flex: 0 0 auto;
+    min-width: auto;
+}
+
+label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+input, select, textarea {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--accent-indigo);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+}
+
+select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+/* ==========================================================================
+   BUTTONS
+   Sleek button components with micro-animations.
+   ========================================================================== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn-primary {
+    background: var(--accent-indigo);
+    color: #fff;
+    box-shadow: var(--shadow-glow);
+}
+
+.btn-primary:hover {
+    background: var(--accent-indigo-hover);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: #475569;
+}
+
+.btn-success {
+    background: var(--accent-emerald);
+    color: #fff;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn-danger {
+    background: var(--accent-rose);
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #e11d48;
+}
+
+.btn-icon {
+    padding: 8px;
+    border-radius: var(--radius-sm);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* ==========================================================================
+   DATA TABLES
+   Custom styled matrix tables for score inputs and collation sheets.
+   ========================================================================== */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+th {
+    background: rgba(30, 41, 59, 0.9);
+    padding: 14px 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+td {
+    padding: 14px 18px;
+    font-size: 0.95rem;
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--text-primary);
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Custom score entry inputs width */
+.score-input {
+    width: 70px;
+    padding: 6px 10px;
+    text-align: center;
+    border-radius: var(--radius-sm);
+}
+
+/* Collation sheet scroll box height */
+.collation-table-wrapper {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* ==========================================================================
+   STUDENT REPORT CARDS
+   Displays professional printed school results card layout formats.
+   ========================================================================== */
+.report-card-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.report-card,
+.report-card * {
+    font-family: 'Tahoma', sans-serif !important;
+}
+
+.report-card {
+    background: #fff;
+    color: #000;
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+/* Watermark background styles */
+.report-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 350px;
+    height: 350px;
+    opacity: 0.06; /* Faint enough to keep text readable */
+    z-index: -1;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.report-watermark img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Logo and school details alignment */
+.logo-and-info {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.school-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px double #334155;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.school-info h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.school-info p {
+    color: #475569;
+    font-size: 0.9rem;
+    margin-top: 2px;
+}
+
+.report-title {
+    text-align: right;
+}
+
+.report-title h3 {
+    font-size: 1.4rem;
+    color: #6366f1;
+    font-weight: 700;
+}
+
+.student-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+    background: #f8fafc;
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid #e2e8f0;
+}
+
+.meta-item {
+    font-size: 0.95rem;
+}
+
+.meta-item strong {
+    color: #334155;
+}
+
+/* Styling for tables inside printed report sheet */
+.report-card table {
+    border: 1px solid #cbd5e1;
+}
+
+.report-card th {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-bottom: 2px solid #cbd5e1;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.report-card td {
+    border-bottom: 1px solid #cbd5e1;
+    color: #334155;
+}
+
+.report-card tr:hover td {
+    background: none;
+}
+
+/* Bottom summary KPI grid boxes */
+.summary-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.metric-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.metric-title {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.metric-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-top: 4px;
+}
+
+/* Teacher and Principal remarks containers */
+.remarks-section {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.remark-box {
+    border-bottom: 1px dashed #cbd5e1;
+    padding-bottom: 1rem;
+}
+
+/* Signature areas at report card footer */
+.signature-row {
+    margin-top: 3.5rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.signature-line {
+    width: 200px;
+    border-top: 1px solid #000;
+    text-align: center;
+    padding-top: 8px;
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+/* ==========================================================================
+   MODAL DIALOG POPUPS
+   Overlay panels for configuring settings.
+   ========================================================================== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-normal);
+}
+
+.modal.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 500px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    transform: scale(0.95);
+    transition: transform var(--transition-normal);
+}
+
+.modal.open .modal-content {
+    transform: scale(1);
+}
+
+/* Badge highlights */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-emerald);
+}
+
+.badge-danger {
+    background: rgba(244, 63, 94, 0.15);
+    color: var(--accent-rose);
+}
+
+.badge-warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--accent-amber);
+}
+
+/* ==========================================================================
+   PRINT MEDIA RULES
+   Overrides backgrounds, hides sidebars/actions, and optimizes layouts when printing.
+   ========================================================================== */
+@media print {
+    body {
+        background: #fff !important;
+        color: #000 !important;
+    }
+    aside, main > header, .btn, .panel-header, .filter-row, .no-print {
+        display: none !important;
+    }
+    main {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+    .report-card {
+        box-shadow: none !important;
+        padding: 0 !important;
+        page-break-after: always;
+    }
+    .print-only {
+        display: block !important;
+    }
+}
+
+.print-only {
+    display: none;
+}
+
+/* ==========================================================================
+   LOGIN OVERLAY STYLES
+   Premium glassmorphism overlay for credentials inputs.
+   ========================================================================== */
+#login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--bg-primary);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 1;
+    transition: opacity var(--transition-normal);
+}
+
+.login-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 420px;
+    padding: 2.5rem;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.login-logo {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.login-logo img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.3));
+}
+
+.login-logo h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    background: linear-gradient(to right, #fff, var(--text-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.login-logo p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-error-msg {
+    color: var(--accent-rose);
+    background: rgba(244, 63, 94, 0.1);
+    border: 1px solid rgba(244, 63, 94, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1.25rem;
+    display: none;
+}
+
+.login-help {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    font-size: 0.8rem;
+}
+
+.login-help .help-title {
+    font-weight: 700;
+    color: var(--accent-indigo);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.login-help ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.login-help li {
+    color: var(--text-secondary);
+}
+
+.login-help li strong {
+    color: var(--text-primary);
+}
