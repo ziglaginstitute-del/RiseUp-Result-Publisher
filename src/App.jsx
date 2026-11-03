@@ -14,7 +14,19 @@ import SubjectTeacherPortal from './views/SubjectTeacherPortal'
 import ClassTeacherPortal from './views/ClassTeacherPortal'
 import StudentPortal from './views/StudentPortal'
 import LoginOverlay from './views/LoginOverlay'
-import { loadAppState, saveAppState, saveGradeRecord, INITIAL_STATE } from './services/dataService'
+import {
+  loadAppState,
+  saveAppState,
+  saveGradeRecord,
+  saveSubjectRecord,
+  deleteSubjectRecord,
+  saveClassRecord,
+  deleteClassRecord,
+  saveStudentRecord,
+  deleteStudentRecord,
+  saveMultipleStudents,
+  INITIAL_STATE
+} from './services/dataService'
 import { getActiveSession, loginUser, logoutUser } from './services/authService'
 
 export default function App() {
@@ -139,6 +151,7 @@ export default function App() {
     }
     setAppState(nextState)
     await saveAppState(nextState)
+    await saveStudentRecord(studentData)
     setIsStudentModalOpen(false)
     showToast({ type: 'success', message: `Student "${studentData.name}" enrolled successfully!` })
   }
@@ -151,6 +164,7 @@ export default function App() {
     const nextState = { ...appState, students: nextStudents, grades: nextGrades }
     setAppState(nextState)
     await saveAppState(nextState)
+    await deleteStudentRecord(studentId)
     showToast({ type: 'info', message: 'Student removed from register.' })
   }
 
@@ -161,6 +175,7 @@ export default function App() {
     }
     setAppState(nextState)
     await saveAppState(nextState)
+    await saveMultipleStudents(newStudents)
     setIsCSVImportModalOpen(false)
     showToast({ type: 'success', message: `Successfully imported ${newStudents.length} students!` })
   }
@@ -172,6 +187,7 @@ export default function App() {
     }
     setAppState(nextState)
     await saveAppState(nextState)
+    await saveSubjectRecord(subjectData)
     setIsSubjectModalOpen(false)
     showToast({ type: 'success', message: `Subject "${subjectData.name}" added successfully!` })
   }
@@ -190,6 +206,7 @@ export default function App() {
     const nextState = { ...appState, subjects: nextSubjects, grades: nextGrades }
     setAppState(nextState)
     await saveAppState(nextState)
+    await deleteSubjectRecord(subjectId)
     showToast({ type: 'info', message: 'Subject deleted successfully.' })
   }
 
@@ -200,6 +217,7 @@ export default function App() {
     }
     setAppState(nextState)
     await saveAppState(nextState)
+    await saveClassRecord(classData)
     setIsClassModalOpen(false)
     showToast({ type: 'success', message: `Class "${classData.name}" created successfully!` })
   }
@@ -209,6 +227,7 @@ export default function App() {
     const nextState = { ...appState, classes: nextClasses }
     setAppState(nextState)
     await saveAppState(nextState)
+    await deleteClassRecord(classId)
     showToast({ type: 'info', message: 'Class deleted successfully.' })
   }
 

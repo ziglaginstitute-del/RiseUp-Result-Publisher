@@ -2,9 +2,11 @@ import { createClient } from '@supabase/supabase-js'
 
 // Load Supabase credentials from environment variables or project defaults
 const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL || 'https://mjzcxsppicererwzamjo.supabase.co'
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
+  'https://mjzcxsppicererwzamjo.supabase.co'
 const SUPABASE_ANON_KEY =
-  import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_Ef1cl6vrkoeCbbCyY_8s-g_Kn65lYNc'
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
+  'sb_publishable_Ef1cl6vrkoeCbbCyY_8s-g_Kn65lYNc'
 
 export const isSupabaseConfigured = () => {
   return Boolean(

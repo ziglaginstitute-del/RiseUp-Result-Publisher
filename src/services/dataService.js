@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from './supabaseClient'
+import { supabase, isSupabaseConfigured } from './supabaseClient.js'
 
 const LOCAL_STORAGE_KEY = 'riseup_results_publisher_state_v2'
 
@@ -245,21 +245,20 @@ export async function saveAppState(state) {
 
   if (isSupabaseConfigured() && supabase) {
     try {
-      // Background sync to Supabase
-      await Promise.all([
-        supabase.from('school_settings').upsert([
-          { key: 'activeTerm', value: state.activeTerm },
-          { key: 'activeSession', value: state.activeSession },
-          { key: 'sessions', value: state.sessions },
-          { key: 'caWeight', value: state.settings.caWeight },
-          { key: 'examWeight', value: state.settings.examWeight },
-          { key: 'scale', value: state.settings.scale },
-          { key: 'schoolName', value: state.settings.schoolName },
-          { key: 'principalName', value: state.settings.principalName },
-          { key: 'principalSignature', value: state.settings.principalSignature || '' },
-          { key: 'remarks', value: state.remarks || {} }
-        ])
-      ])
+      const settingsPayload = [
+        { key: 'activeTerm', value: state.activeTerm },
+        { key: 'activeSession', value: state.activeSession },
+        { key: 'sessions', value: state.sessions },
+        { key: 'remarks', value: state.remarks || {} }
+      ]
+
+      if (state.settings) {
+        Object.entries(state.settings).forEach(([k, v]) => {
+          settingsPayload.push({ key: k, value: v })
+        })
+      }
+
+      await supabase.from('school_settings').upsert(settingsPayload)
     } catch (err) {
       console.warn('Background sync to Supabase failed:', err)
     }
@@ -289,4 +288,151 @@ export async function saveGradeRecord({ studentId, classId, subjectId, termId, s
       console.warn('Failed saving grade to Supabase:', err)
     }
   }
+}
+
+/**
+ * Saves or updates a subject in Supabase cloud
+ */
+export async function saveSubjectRecord(subject) {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase.from('subjects').upsert({
+        id: subject.id,
+        name: subject.name,
+        code: subject.code || '',
+        department: subject.department || 'General'
+      }).select()
+      if (error) console.error('Supabase saveSubjectRecord error:', error)
+      return { success: !error, error, data }
+    } catch (err) {
+      console.warn('Failed saving subject to Supabase:', err)
+      return { success: false, error: err }
+    }
+  }
+  return { success: true }
+}
+
+/**
+ * Deletes a subject and its associated grades from Supabase cloud
+ */
+export async function deleteSubjectRecord(subjectId) {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      await supabase.from('grades').delete().eq('subject_id', subjectId)
+      const { error } = await supabase.from('subjects').delete().eq('id', subjectId)
+      if (error) console.error('Supabase deleteSubjectRecord error:', error)
+      return { success: !error, error }
+    } catch (err) {
+      console.warn('Failed deleting subject from Supabase:', err)
+      return { success: false, error: err }
+    }
+  }
+  return { success: true }
+}
+
+/**
+ * Saves or updates a class in Supabase cloud
+ */
+export async function saveClassRecord(cls) {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase.from('classes').upsert({
+        id: cls.id,
+        name: cls.name,
+        level: cls.level || 'Senior'
+      }).select()
+      if (error) console.error('Supabase saveClassRecord error:', error)
+      return { success: !error, error, data }
+    } catch (err) {
+      console.warn('Failed saving class to Supabase:', err)
+      return { success: false, error: err }
+    }
+  }
+  return { success: true }
+}
+
+/**
+ * Deletes a class from Supabase cloud
+ */
+export async function deleteClassRecord(classId) {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { error } = await supabase.from('classes').delete().eq('id', classId)
+      if (error) console.error('Supabase deleteClassRecord error:', error)
+      return { success: !error, error }
+    } catch (err) {
+      console.warn('Failed deleting class from Supabase:', err)
+      return { success: false, error: err }
+    }
+  }
+  return { success: true }
+}
+
+/**
+ * Saves or updates a student in Supabase cloud
+ */
+export async function saveStudentRecord(st) {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase.from('students').upsert({
+        id: st.id,
+        reg_no: st.reg_no || st.id,
+        name: st.name,
+        class_id: st.classId || st.class_id,
+        department: st.department || 'General',
+        access_pin: st.access_pin || '1234',
+        gender: st.gender || 'M'
+      }).select()
+      if (error) console.error('Supabase saveStudentRecord error:', error)
+      return { success: !error, error, data }
+    } catch (err) {
+      console.warn('Failed saving student to Supabase:', err)
+      return { success: false, error: err }
+    }
+  }
+  return { success: true }
+}
+
+/**
+ * Bulk saves students to Supabase cloud
+ */
+export async function saveMultipleStudents(studentsList) {
+  if (isSupabaseConfigured() && supabase && studentsList.length > 0) {
+    try {
+      const rows = studentsList.map(st => ({
+        id: st.id,
+        reg_no: st.reg_no || st.id,
+        name: st.name,
+        class_id: st.classId || st.class_id,
+        department: st.department || 'General',
+        access_pin: st.access_pin || '1234',
+        gender: st.gender || 'M'
+      }))
+      const { data, error } = await supabase.from('students').upsert(rows).select()
+      if (error) console.error('Supabase saveMultipleStudents error:', error)
+      return { success: !error, error, data }
+    } catch (err) {
+      console.warn('Failed saving bulk students to Supabase:', err)
+      return { success: false, error: err }
+    }
+  }
+  return { success: true }
+}
+
+/**
+ * Deletes a student and their grades from Supabase cloud
+ */
+export async function deleteStudentRecord(studentId) {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      await supabase.from('grades').delete().eq('student_id', studentId)
+      const { error } = await supabase.from('students').delete().eq('id', studentId)
+      if (error) console.error('Supabase deleteStudentRecord error:', error)
+      return { success: !error, error }
+    } catch (err) {
+      console.warn('Failed deleting student from Supabase:', err)
+      return { success: false, error: err }
+    }
+  }
+  return { success: true }
 }
