@@ -1,0 +1,19 @@
+{
+  "name": "RiseUp College Results Publisher",
+  "short_name": "ResultsApp",
+  "description": "Offline-ready academic results compilation and student report card publisher",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0F172A",
+  "theme_color": "#0284C7",
+  "icons": [
+    {
+      "src": "./RiseUp Logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

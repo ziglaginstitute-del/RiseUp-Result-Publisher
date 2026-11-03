@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0284c7;
+}
+
+/* Rotated vertical subject column headers for Collation Sheet */
+.vertical-header {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  height: 110px;
+  min-width: 44px;
+  max-width: 48px;
+  padding: 8px 2px !important;
+  font-size: 0.72rem;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Sticky frozen table columns */
+.sticky-col-name {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: #1e293b;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sticky-col-dept {
+  position: sticky;
+  left: 140px;
+  z-index: 10;
+  background: #1e293b;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================================
+   A4 PRINT REPORT CARD STYLESHEET
+   Ensures single-page A4 printing without ugly pagination breaks or dark background
+   ============================================================================ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 6mm 8mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 10pt !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide screen layout elements */
+  aside, nav, header, .no-print, button, .modal-backdrop {
+    display: none !important;
+  }
+
+  /* Neutralize modal wrapper for clean paper presentation */
+  .printable-card-wrapper {
+    position: static !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .printable-card {
+    border: 2px solid #0f172a !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  table {
+    page-break-inside: avoid !important;
+  }
+}
