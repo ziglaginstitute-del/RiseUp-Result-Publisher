@@ -33,12 +33,14 @@ class Subject(db.Model):
     __tablename__ = 'subjects'
     id = db.Column(db.String(50), primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    department = db.Column(db.String(50), nullable=False, default='General')  # 'General', 'Science', 'Art', 'Commercial'
 
 class Student(db.Model):
     __tablename__ = 'students'
     id = db.Column(db.String(50), primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     class_id = db.Column(db.String(50), db.ForeignKey('classes.id', ondelete='CASCADE'), nullable=False)
+    department = db.Column(db.String(50), nullable=False, default='General')  # 'General', 'Science', 'Art', 'Commercial'
 
 class Grade(db.Model):
     __tablename__ = 'grades'
@@ -141,8 +143,8 @@ def get_state():
             
             cls_obj = Class.query.get(student_obj.class_id)
             classes = [{"id": cls_obj.id, "name": cls_obj.name}] if cls_obj else []
-            subjects = [{"id": s.id, "name": s.name} for s in Subject.query.all()]
-            students = [{"id": student_obj.id, "name": student_obj.name, "classId": student_obj.class_id}]
+            subjects = [{"id": s.id, "name": s.name, "department": getattr(s, 'department', 'General') or 'General'} for s in Subject.query.all()]
+            students = [{"id": student_obj.id, "name": student_obj.name, "classId": student_obj.class_id, "department": getattr(student_obj, 'department', 'General') or 'General'}]
             
             grades_dict = {}
             for g in Grade.query.filter_by(student_id=student_id, session_id=active_session).all():
@@ -159,8 +161,8 @@ def get_state():
                 }
         else:
             classes = [{"id": c.id, "name": c.name} for c in Class.query.all()]
-            subjects = [{"id": s.id, "name": s.name} for s in Subject.query.all()]
-            students = [{"id": st.id, "name": st.name, "classId": st.class_id} for st in Student.query.all()]
+            subjects = [{"id": s.id, "name": s.name, "department": getattr(s, 'department', 'General') or 'General'} for s in Subject.query.all()]
+            students = [{"id": st.id, "name": st.name, "classId": st.class_id, "department": getattr(st, 'department', 'General') or 'General'} for st in Student.query.all()]
 
             # Structure grades dictionary matching frontend state grades format
             grades_dict = {}
@@ -215,11 +217,11 @@ def save_state():
 
         # Insert subjects
         for s in data.get('subjects', []):
-            db.session.add(Subject(id=s['id'], name=s['name']))
+            db.session.add(Subject(id=s['id'], name=s['name'], department=s.get('department', 'General')))
 
         # Insert students
         for st in data.get('students', []):
-            db.session.add(Student(id=st['id'], name=st['name'], class_id=st['classId']))
+            db.session.add(Student(id=st['id'], name=st['name'], class_id=st['classId'], department=st.get('department', 'General')))
 
         # Insert settings values
         settings_data = data.get('settings', {})
@@ -390,6 +392,16 @@ with app.app_context():
             if 'session_id' not in columns:
                 print("Upgrading database schema: session_id column missing. Recreating tables...")
                 db.drop_all()
+        if 'subjects' in inspector.get_table_names():
+            columns = [c['name'] for c in inspector.get_columns('subjects')]
+            if 'department' not in columns:
+                print("Upgrading database schema: department column missing in subjects. Recreating tables...")
+                db.drop_all()
+        if 'students' in inspector.get_table_names():
+            columns = [c['name'] for c in inspector.get_columns('students')]
+            if 'department' not in columns:
+                print("Upgrading database schema: department column missing in students. Recreating tables...")
+                db.drop_all()
     except Exception as e:
         print(f"Error inspecting database schema: {e}")
 
@@ -401,26 +413,40 @@ with app.app_context():
         if Class.query.count() == 0:
             db.session.add(Class(id='c1', name='Grade 10A'))
             db.session.add(Class(id='c2', name='Grade 11B'))
+            db.session.add(Class(id='c3', name='JSS 1A'))
         
         # Seed default subjects if empty
         if Subject.query.count() == 0:
-            db.session.add(Subject(id='s1', name='Mathematics'))
-            db.session.add(Subject(id='s2', name='English Language'))
-            db.session.add(Subject(id='s3', name='Chemistry'))
-            db.session.add(Subject(id='s4', name='Physics'))
+            db.session.add(Subject(id='s1', name='Mathematics', department='General'))
+            db.session.add(Subject(id='s2', name='English Language', department='General'))
+            db.session.add(Subject(id='s3', name='Chemistry', department='Science'))
+            db.session.add(Subject(id='s4', name='Physics', department='Science'))
+            db.session.add(Subject(id='s5', name='Economics', department='Arts & Commercial'))
+            db.session.add(Subject(id='s6', name='Literature in English', department='Art'))
+            db.session.add(Subject(id='s7', name='Government', department='Arts & Commercial'))
+            db.session.add(Subject(id='s8', name='Financial Accounting', department='Commercial'))
+            db.session.add(Subject(id='s9', name='Biology', department='Science'))
+            db.session.add(Subject(id='s10', name='Civic Education', department='General'))
+            db.session.add(Subject(id='s11', name='Computer Studies', department='Elective'))
+            db.session.add(Subject(id='s12', name='Agricultural Science', department='Elective'))
+            db.session.add(Subject(id='s13', name='Basic Science', department='Junior'))
+            db.session.add(Subject(id='s14', name='Basic Technology', department='Junior'))
+            db.session.add(Subject(id='s15', name='Social Studies', department='Junior'))
+            db.session.add(Subject(id='s16', name='Business Studies', department='Junior'))
         
         # Seed students if empty (to avoid empty lists on initial load)
         if Student.query.count() == 0:
             student_seeds = [
-                ('st1', 'Chinedu Okafor', 'c1'),
-                ('st2', 'Amina Yusuf', 'c1'),
-                ('st3', 'Tunde Bakare', 'c1'),
-                ('st4', 'Elizabeth Adebayo', 'c1'),
-                ('st5', 'John Peterson', 'c2'),
-                ('st6', 'Fatima Umar', 'c2')
+                ('st1', 'Chinedu Okafor', 'c1', 'Science'),
+                ('st2', 'Amina Yusuf', 'c1', 'Art'),
+                ('st3', 'Tunde Bakare', 'c1', 'Commercial'),
+                ('st4', 'Elizabeth Adebayo', 'c1', 'Science'),
+                ('st5', 'John Peterson', 'c2', 'Science'),
+                ('st6', 'Fatima Umar', 'c2', 'Art'),
+                ('st7', 'Blessing Eze', 'c3', 'Junior')
             ]
-            for sid, sname, cid in student_seeds:
-                db.session.add(Student(id=sid, name=sname, class_id=cid))
+            for sid, sname, cid, sdept in student_seeds:
+                db.session.add(Student(id=sid, name=sname, class_id=cid, department=sdept))
                 
                 parts = sname.replace(',', ' ').split()
                 spass = parts[-1].lower() if parts else 'studentpassword'
@@ -505,11 +531,16 @@ def add_student():
         if not cls:
             return jsonify({"error": "Class not found"}), 404
         
+        dept = data.get('department', 'General')
+        if dept not in ['General', 'Science', 'Art', 'Commercial']:
+            dept = 'General'
+
         # Insert student
         new_stud = Student(
             id=student_id,
             name=data.get('name').strip(),
-            class_id=data.get('classId')
+            class_id=data.get('classId'),
+            department=dept
         )
         db.session.add(new_stud)
         

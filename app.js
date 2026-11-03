@@ -49,8 +49,54 @@ let currentUser = null; // Stores authenticated session user: { username, role, 
  * App Initializer callback. Triggers loading cached state and opens the admin view on start.
  */
 window.onload = async function() {
+    initSidebarState();
     await initSession();
 };
+
+/**
+ * Toggles the sidebar navigation panel collapsed/expanded state. Saves preference to localStorage.
+ */
+function toggleSidebar() {
+    const sidebar = document.getElementById('app-sidebar');
+    const main = document.querySelector('main');
+    const icon = document.getElementById('sidebar-toggle-icon');
+    
+    if (!sidebar || !main) return;
+    
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    main.classList.toggle('collapsed-main', isCollapsed);
+    
+    if (icon) {
+        icon.className = isCollapsed ? 'ri-menu-unfold-line' : 'ri-menu-fold-line';
+    }
+    
+    localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
+}
+
+/**
+ * Restores sidebar collapsed state preference from localStorage on load.
+ */
+function initSidebarState() {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    if (saved === 'true') {
+        const sidebar = document.getElementById('app-sidebar');
+        const main = document.querySelector('main');
+        const icon = document.getElementById('sidebar-toggle-icon');
+        if (sidebar) sidebar.classList.add('collapsed');
+        if (main) main.classList.add('collapsed-main');
+        if (icon) icon.className = 'ri-menu-unfold-line';
+    }
+}
+
+/**
+ * Toggles fullscreen workspace mode for the Class Teacher collation panel.
+ */
+function toggleCollationFullscreen() {
+    const panel = document.getElementById('panel-class');
+    if (panel) {
+        panel.classList.toggle('panel-fullscreen');
+    }
+}
 
 /**
  * Checks backend session authentication, filters navigation links, and handles login redirections.
@@ -307,18 +353,26 @@ function seedMockData() {
         { id: 'c2', name: 'Grade 11B' }
     ];
     state.subjects = [
-        { id: 's1', name: 'Mathematics' },
-        { id: 's2', name: 'English Language' },
-        { id: 's3', name: 'Chemistry' },
-        { id: 's4', name: 'Physics' }
+        { id: 's1', name: 'Mathematics', department: 'General' },
+        { id: 's2', name: 'English Language', department: 'General' },
+        { id: 's3', name: 'Chemistry', department: 'Science' },
+        { id: 's4', name: 'Physics', department: 'Science' },
+        { id: 's5', name: 'Economics', department: 'Arts & Commercial' },
+        { id: 's6', name: 'Literature in English', department: 'Art' },
+        { id: 's7', name: 'Government', department: 'Arts & Commercial' },
+        { id: 's8', name: 'Financial Accounting', department: 'Commercial' },
+        { id: 's9', name: 'Biology', department: 'Science' },
+        { id: 's10', name: 'Civic Education', department: 'General' },
+        { id: 's11', name: 'Computer Studies', department: 'Elective' },
+        { id: 's12', name: 'Agricultural Science', department: 'Elective' }
     ];
     state.students = [
-        { id: 'st1', name: 'Chinedu Okafor', classId: 'c1' },
-        { id: 'st2', name: 'Amina Yusuf', classId: 'c1' },
-        { id: 'st3', name: 'Tunde Bakare', classId: 'c1' },
-        { id: 'st4', name: 'Elizabeth Adebayo', classId: 'c1' },
-        { id: 'st5', name: 'John Peterson', classId: 'c2' },
-        { id: 'st6', name: 'Fatima Umar', classId: 'c2' }
+        { id: 'st1', name: 'Chinedu Okafor', classId: 'c1', department: 'Science' },
+        { id: 'st2', name: 'Amina Yusuf', classId: 'c1', department: 'Art' },
+        { id: 'st3', name: 'Tunde Bakare', classId: 'c1', department: 'Commercial' },
+        { id: 'st4', name: 'Elizabeth Adebayo', classId: 'c1', department: 'Science' },
+        { id: 'st5', name: 'John Peterson', classId: 'c2', department: 'Science' },
+        { id: 'st6', name: 'Fatima Umar', classId: 'c2', department: 'Art' }
     ];
     
     // Seed some mock grades across all terms (t1, t2, t3)
@@ -415,6 +469,7 @@ function switchPortal(portal) {
         document.getElementById('panel-admin').style.display = 'flex';
         titleEl.innerText = "Admin Configuration";
         subtitleEl.innerText = "Manage school structures, students, and grading criteria";
+        renderAdminTable();
     } else if (portal === 'subject') {
         document.querySelector("nav div:nth-child(2)").classList.add('active');
         document.getElementById('panel-subject').style.display = 'flex';
@@ -437,25 +492,99 @@ function populateSelects() {
     const newStudentClassSel = document.getElementById('new-student-class');
     const teacherClassSel = document.getElementById('teacher-class-select');
     const classTeacherSel = document.getElementById('class-teacher-select');
-    const teacherSubjectSel = document.getElementById('teacher-subject-select');
     
     // Reset contents
-    newStudentClassSel.innerHTML = '<option value="">-- Choose Class --</option>';
-    teacherClassSel.innerHTML = '<option value="">-- Choose Class --</option>';
-    classTeacherSel.innerHTML = '<option value="">-- Choose Class --</option>';
-    teacherSubjectSel.innerHTML = '<option value="">-- Choose Subject --</option>';
+    if (newStudentClassSel) newStudentClassSel.innerHTML = '<option value="">-- Choose Class --</option>';
+    if (teacherClassSel) teacherClassSel.innerHTML = '<option value="">-- Choose Class --</option>';
+    if (classTeacherSel) classTeacherSel.innerHTML = '<option value="">-- Choose Class --</option>';
 
     state.classes.forEach(cls => {
-        newStudentClassSel.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
-        teacherClassSel.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
-        classTeacherSel.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
+        if (newStudentClassSel) newStudentClassSel.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
+        if (teacherClassSel) teacherClassSel.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
+        if (classTeacherSel) classTeacherSel.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
     });
 
+    populateTeacherSubjectSelect();
+}
+
+/**
+ * Evaluates whether a subject is applicable to a student based on their department classification.
+ * @param {string} subDept - Subject department category.
+ * @param {string} studentDept - Student department category.
+ * @returns {boolean} True if applicable.
+ */
+function isSubjectApplicable(subDept, studentDept) {
+    const sDept = subDept || 'General';
+    const stDept = studentDept || 'General';
+    
+    if (sDept === 'General' || sDept === 'Elective') return true;
+    if (stDept === 'Junior') {
+        return sDept === 'Junior' || sDept === 'General';
+    }
+    if (sDept === 'Junior') {
+        return stDept === 'Junior';
+    }
+    if (sDept === 'Arts & Commercial' || sDept === 'Art & Commercial') {
+        return stDept === 'Art' || stDept === 'Commercial';
+    }
+    return sDept === stDept;
+}
+
+/**
+ * Checks if a score has been allocated/entered for a specific student in a subject across any term.
+ * @param {string} studentId - Target student ID.
+ * @param {string} subjectId - Target subject ID.
+ * @returns {boolean} True if a score has been allocated/entered.
+ */
+function hasScoreAllocated(studentId, subjectId) {
+    if (!state.grades || !state.grades[studentId]) return false;
+    let found = false;
+    ['t1', 't2', 't3'].forEach(t => {
+        if (state.grades[studentId][t] && state.grades[studentId][t][subjectId]) {
+            const g = state.grades[studentId][t][subjectId];
+            if ((g.total !== undefined && g.total !== '' && g.total !== null) ||
+                (g.ca !== undefined && g.ca !== '' && g.ca !== null) ||
+                (g.exam !== undefined && g.exam !== '' && g.exam !== null)) {
+                found = true;
+            }
+        }
+    });
+    return found;
+}
+
+/**
+ * Evaluates whether a subject is applicable for a specific student, ensuring Elective subjects
+ * only reflect if a score allocation exists for that student.
+ * @param {Object} subject - Subject object.
+ * @param {string} studentId - Unique student ID.
+ * @param {string} studentDept - Student department classification.
+ * @returns {boolean} True if the subject should reflect on the student's result.
+ */
+function isSubjectApplicableForStudent(subject, studentId, studentDept) {
+    const sDept = subject.department || 'General';
+    if (sDept === 'Elective') {
+        return hasScoreAllocated(studentId, subject.id);
+    }
+    return isSubjectApplicable(sDept, studentDept);
+}
+
+function populateTeacherSubjectSelect() {
+    const teacherSubjectSel = document.getElementById('teacher-subject-select');
+    if (!teacherSubjectSel) return;
+
+    teacherSubjectSel.innerHTML = '<option value="">-- Choose Subject --</option>';
+
     state.subjects.forEach(sub => {
-        teacherSubjectSel.innerHTML += `<option value="${sub.id}">${sub.name}</option>`;
+        const deptLabel = sub.department || 'General';
+        teacherSubjectSel.innerHTML += `<option value="${sub.id}">${sub.name} (${deptLabel})</option>`;
     });
 
     teacherSubjectSel.disabled = false;
+}
+
+function onTeacherDeptChange() {
+    populateTeacherSubjectSelect();
+    renderScoreEntryTable();
 }
 
 /**
@@ -497,11 +626,14 @@ function addClass() {
  */
 function addSubject() {
     const name = document.getElementById('new-subject-name').value.trim();
+    const deptEl = document.getElementById('new-subject-dept');
+    const department = deptEl ? deptEl.value : 'General';
     if (!name) return alert("Subject name is required!");
     
     const newSub = {
         id: 's_' + Date.now(),
-        name: name
+        name: name,
+        department: department
     };
     state.subjects.push(newSub);
     document.getElementById('new-subject-name').value = '';
@@ -517,13 +649,16 @@ async function addStudent() {
     const customId = document.getElementById('new-student-id').value.trim();
     const name = document.getElementById('new-student-name').value.trim();
     const classId = document.getElementById('new-student-class').value;
+    const deptEl = document.getElementById('new-student-dept');
+    const department = deptEl ? deptEl.value : 'General';
     
     if (!customId || !name || !classId) return alert("Student ID, name, and class assignment are all required!");
     
     const newStud = {
         id: customId,
         name: name,
-        classId: classId
+        classId: classId,
+        department: department
     };
     
     try {
@@ -562,32 +697,54 @@ async function addStudent() {
 }
 
 /**
- * Renders the structural list of school classes, enrolled numbers, and actions inside the admin panel.
+ * Renders the structural list of school classes and subjects with actions inside the admin panel.
  */
 function renderAdminTable() {
     const tbody = document.getElementById('admin-table-body');
-    tbody.innerHTML = '';
+    const subjectsTbody = document.getElementById('admin-subjects-table-body');
     
-    if (state.classes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">No classes configured yet. Add classes to start.</td></tr>';
-        return;
+    if (tbody) {
+        tbody.innerHTML = '';
+        if (state.classes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">No classes configured yet. Add classes to start.</td></tr>';
+        } else {
+            state.classes.forEach(cls => {
+                const studentCount = state.students.filter(st => st.classId === cls.id).length;
+                const subjectsList = state.subjects.map(s => `${s.name} (${s.department || 'General'})`).join(', ') || 'All subjects offered';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${cls.name}</strong></td>
+                        <td style="font-size: 0.85rem; color: var(--text-secondary); max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${subjectsList}</td>
+                        <td><span class="badge badge-success">${studentCount} Students</span></td>
+                        <td>
+                            <button class="btn btn-danger btn-icon" onclick="deleteClass('${cls.id}')" title="Delete Class"><i class="ri-delete-bin-line"></i> Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
     }
 
-    state.classes.forEach(cls => {
-        const studentCount = state.students.filter(st => st.classId === cls.id).length;
-        const subjectsList = state.subjects.map(s => s.name).join(', ') || 'All subjects offered';
-        
-        tbody.innerHTML += `
-            <tr>
-                <td><strong>${cls.name}</strong></td>
-                <td style="font-size: 0.85rem; color: var(--text-secondary); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${subjectsList}</td>
-                <td><span class="badge badge-success">${studentCount} Students</span></td>
-                <td>
-                    <button class="btn btn-danger btn-icon" onclick="deleteClass('${cls.id}')"><i class="ri-delete-bin-line"></i></button>
-                </td>
-            </tr>
-        `;
-    });
+    if (subjectsTbody) {
+        subjectsTbody.innerHTML = '';
+        if (state.subjects.length === 0) {
+            subjectsTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">No subjects configured yet. Add subjects to start.</td></tr>';
+        } else {
+            state.subjects.forEach(sub => {
+                const dept = sub.department || 'General';
+                subjectsTbody.innerHTML += `
+                    <tr>
+                        <td><strong>${sub.name}</strong></td>
+                        <td><span class="badge ${getDeptBadgeClass(dept)}">${dept}</span></td>
+                        <td>
+                            <button class="btn btn-danger btn-icon" onclick="deleteSubject('${sub.id}')" title="Delete Subject"><i class="ri-delete-bin-line"></i> Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    }
 }
 
 /**
@@ -600,6 +757,35 @@ function deleteClass(classId) {
     state.students = state.students.filter(st => st.classId !== classId);
     saveState();
     populateSelects();
+    renderAdminTable();
+}
+
+/**
+ * Deletes a subject from active configuration settings and saves to cache/database.
+ * @param {string} subjectId - Target subject ID.
+ */
+function deleteSubject(subjectId) {
+    const sub = state.subjects.find(s => s.id === subjectId);
+    const subName = sub ? sub.name : 'this subject';
+    if (!confirm(`Are you sure you want to delete "${subName}"? This will also remove any grades recorded for this subject.`)) return;
+    
+    state.subjects = state.subjects.filter(s => s.id !== subjectId);
+    
+    // Remove grades associated with this subject
+    if (state.grades) {
+        Object.keys(state.grades).forEach(stId => {
+            ['t1', 't2', 't3'].forEach(term => {
+                if (state.grades[stId] && state.grades[stId][term] && state.grades[stId][term][subjectId]) {
+                    delete state.grades[stId][term][subjectId];
+                }
+            });
+        });
+    }
+    
+    saveState();
+    populateSelects();
+    renderAdminTable();
+    updateStats();
 }
 
 /**
@@ -676,33 +862,57 @@ function calculateGrade(score) {
 /**
  * Renders dynamic inputs lists for subject teachers to input scores per student based on active configurations.
  */
+function getDeptBadgeClass(dept) {
+    if (dept === 'Science') return 'badge-info';
+    if (dept === 'Art') return 'badge-warning';
+    if (dept === 'Commercial') return 'badge-purple';
+    if (dept === 'Arts & Commercial' || dept === 'Art & Commercial') return 'badge-indigo';
+    if (dept === 'Elective') return 'badge-teal';
+    if (dept === 'Junior') return 'badge-sky';
+    return 'badge-secondary';
+}
+
+/**
+ * Renders dynamic inputs lists for subject teachers to input scores per student based on active configurations.
+ */
 function renderScoreEntryTable() {
     const classId = document.getElementById('teacher-class-select').value;
     const subjectId = document.getElementById('teacher-subject-select').value;
     const tbody = document.getElementById('score-entry-table-body');
     
     if (!classId || !subjectId) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">Please select both a class and subject to input scores.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">Please select both a class and subject to input scores.</td></tr>';
         return;
     }
 
-    const filteredStudents = state.students.filter(st => st.classId === classId);
-    if (filteredStudents.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">No students registered in this class. Go to Admin Settings to add students.</td></tr>';
+    const subjectObj = state.subjects.find(s => s.id === subjectId);
+    const subjectDept = subjectObj ? (subjectObj.department || 'General') : 'General';
+
+    let classStudents = state.students.filter(st => st.classId === classId);
+
+    // Filter students by subject applicability
+    if (subjectDept !== 'General' && subjectDept !== 'Elective') {
+        classStudents = classStudents.filter(st => isSubjectApplicable(subjectDept, st.department));
+    }
+
+    if (classStudents.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">No students registered under the ${subjectDept} department in this class.</td></tr>`;
         return;
     }
 
     const termId = state.activeTerm || 't1';
 
     tbody.innerHTML = '';
-    filteredStudents.forEach((student, index) => {
+    classStudents.forEach((student, index) => {
         const studentGrades = (state.grades[student.id] && state.grades[student.id][termId]) || {};
         const subjectGrade = studentGrades[subjectId] || { ca: '', exam: '', total: '', grade: '' };
+        const deptTag = student.department || 'General';
         
         tbody.innerHTML += `
             <tr data-student-id="${student.id}">
                 <td>${index + 1}</td>
                 <td><strong>${student.name}</strong></td>
+                <td><span class="badge ${getDeptBadgeClass(deptTag)}">${deptTag}</span></td>
                 <td style="text-align: center;">
                     <input type="number" class="score-input ca-score" value="${subjectGrade.ca}" min="0" max="${state.settings.caWeight}" oninput="calcRowScore(this)">
                 </td>
@@ -888,6 +1098,8 @@ function resetClassPortal() {
  */
 function loadCollationSheet() {
     const classId = document.getElementById('class-teacher-select').value;
+    const deptFilterEl = document.getElementById('class-dept-select');
+    const selectedDept = deptFilterEl ? deptFilterEl.value : '';
     const table = document.getElementById('collation-table');
     
     if (!classId) {
@@ -895,24 +1107,36 @@ function loadCollationSheet() {
         return;
     }
 
-    const classStudents = state.students.filter(st => st.classId === classId);
+    let classStudents = state.students.filter(st => st.classId === classId);
+    
+    // Filter students by selected department if department filter is active
+    if (selectedDept) {
+        classStudents = classStudents.filter(st => (st.department || 'General') === selectedDept);
+    }
+
     if (classStudents.length === 0) {
-        table.innerHTML = '<thead></thead><tbody id="collation-table-body"><tr><td style="text-align: center; color: var(--text-secondary);">No students configured in this class.</td></tr></tbody>';
+        table.innerHTML = '<thead></thead><tbody id="collation-table-body"><tr><td style="text-align: center; color: var(--text-secondary);">No students configured matching the selected department filter.</td></tr></tbody>';
         return;
+    }
+
+    // Filter subjects to show in header matching selected student department filter
+    let collationSubjects = state.subjects;
+    if (selectedDept) {
+        collationSubjects = state.subjects.filter(sub => isSubjectApplicable(sub.department, selectedDept));
     }
 
     const termId = state.activeTerm || 't1';
 
     // Build dynamic header columns based on active subjects configuration
-    let headerHtml = `<tr><th>Student Name</th>`;
-    state.subjects.forEach(sub => {
-        let label = sub.name;
+    let headerHtml = `<tr><th class="sticky-name" style="padding: 6px 8px; font-size: 0.75rem;">Student Name</th><th class="sticky-dept" style="padding: 6px 6px; font-size: 0.75rem;">Dept</th>`;
+    collationSubjects.forEach(sub => {
+        let label = `${sub.name} (${sub.department || 'Gen'})`;
         if (termId === 't3') {
-            label += ' (Session Avg)';
+            label += ' (Avg)';
         }
-        headerHtml += `<th style="text-align: center;">${label}</th>`;
+        headerHtml += `<th class="subject-header" title="${sub.name} (${sub.department || 'General'})">${label}</th>`;
     });
-    headerHtml += `<th style="text-align: center;">Average Score</th><th style="text-align: center;">Position</th><th style="text-align: center;">Report Card</th></tr>`;
+    headerHtml += `<th style="text-align: center; padding: 6px 4px; font-size: 0.75rem;">Avg Score</th><th style="text-align: center; padding: 6px 4px; font-size: 0.75rem;">Position</th><th style="text-align: center; padding: 6px 6px; font-size: 0.75rem;">Report Card</th></tr>`;
     
     table.querySelector('thead').innerHTML = headerHtml;
 
@@ -921,9 +1145,12 @@ function loadCollationSheet() {
         let totalScoreSum = 0;
         let subjectsGraded = 0;
         
+        const studentDept = student.department || 'General';
+        const relevantSubjects = collationSubjects.filter(sub => isSubjectApplicableForStudent(sub, student.id, studentDept));
+
         if (termId === 't3') {
             // Third term average represents the overall cumulative session averages
-            state.subjects.forEach(sub => {
+            relevantSubjects.forEach(sub => {
                 let sum = 0, count = 0;
                 ['t1', 't2', 't3'].forEach(t => {
                     const total = state.grades[student.id] && state.grades[student.id][t] && state.grades[student.id][t][sub.id] && state.grades[student.id][t][sub.id].total;
@@ -939,7 +1166,7 @@ function loadCollationSheet() {
             });
         } else {
             // First and second terms represent simple active term averages
-            state.subjects.forEach(sub => {
+            relevantSubjects.forEach(sub => {
                 const gradeObj = (state.grades[student.id] && state.grades[student.id][termId] && state.grades[student.id][termId][sub.id]) || {};
                 if (gradeObj.total !== undefined && gradeObj.total !== '') {
                     totalScoreSum += gradeObj.total;
@@ -971,9 +1198,19 @@ function loadCollationSheet() {
     tbody.innerHTML = '';
 
     collationList.forEach(item => {
-        let rowHtml = `<tr><td><strong>${item.student.name}</strong></td>`;
+        const studentDept = item.student.department || 'General';
+        let rowHtml = `<tr>
+            <td class="sticky-name"><strong>${item.student.name}</strong></td>
+            <td class="sticky-dept"><span class="badge ${getDeptBadgeClass(studentDept)}">${studentDept}</span></td>`;
         
-        state.subjects.forEach(sub => {
+        collationSubjects.forEach(sub => {
+            const isApplicable = isSubjectApplicableForStudent(sub, item.student.id, studentDept);
+            
+            if (!isApplicable) {
+                rowHtml += `<td style="text-align: center; color: var(--text-muted); font-size: 0.8rem; font-style: italic;">N/A</td>`;
+                return;
+            }
+
             if (termId === 't3') {
                 let sum = 0, count = 0;
                 ['t1', 't2', 't3'].forEach(t => {
@@ -1066,7 +1303,16 @@ function getSubjectPosition(studentId, subjectId, termId, isCumulative) {
     const student = state.students.find(s => s.id === studentId);
     if (!student) return '-';
     
-    const classStudents = state.students.filter(st => st.classId === student.classId);
+    const subObj = state.subjects.find(s => s.id === subjectId);
+    const subDept = subObj ? (subObj.department || 'General') : 'General';
+
+    let classStudents = state.students.filter(st => st.classId === student.classId);
+    if (subDept === 'Elective') {
+        classStudents = classStudents.filter(st => hasScoreAllocated(st.id, subjectId));
+    } else if (subDept !== 'General') {
+        classStudents = classStudents.filter(st => isSubjectApplicable(subDept, st.department));
+    }
+
     const scoreList = classStudents.map(st => {
         let val = null;
         if (isCumulative) {
@@ -1101,14 +1347,21 @@ function generateReportCardHtml(studentId) {
     const student = state.students.find(s => s.id === studentId);
     const cls = state.classes.find(c => c.id === student.classId);
     const activeTerm = state.activeTerm || 't1';
-    
+    const studentDept = student.department || 'General';
+
+    // Relevant subjects for student report card (General + student dept + Junior if Junior + Electives ONLY if score is allocated)
+    const studentSubjects = state.subjects.filter(sub => isSubjectApplicableForStudent(sub, studentId, studentDept));
+
     // Compile class rankings
     const classStudents = state.students.filter(st => st.classId === cls.id);
     const collationList = classStudents.map(st => {
         let total = 0, count = 0;
+        const stDept = st.department || 'General';
+        const relSubs = state.subjects.filter(sub => isSubjectApplicableForStudent(sub, st.id, stDept));
+        
         if (activeTerm === 't3') {
             let cumAvgSum = 0, subjectsCount = 0;
-            state.subjects.forEach(sub => {
+            relSubs.forEach(sub => {
                 let subSum = 0, subCount = 0;
                 ['t1', 't2', 't3'].forEach(t => {
                     const totalScore = state.grades[st.id] && state.grades[st.id][t] && state.grades[st.id][t][sub.id] && state.grades[st.id][t][sub.id].total;
@@ -1124,7 +1377,7 @@ function generateReportCardHtml(studentId) {
             });
             return { id: st.id, avg: subjectsCount > 0 ? (cumAvgSum / subjectsCount) : 0 };
         } else {
-            state.subjects.forEach(s => {
+            relSubs.forEach(s => {
                 const score = (state.grades[st.id] && state.grades[st.id][activeTerm] && state.grades[st.id][activeTerm][s.id]) || {};
                 if (score.total !== undefined && score.total !== '') {
                     total += score.total;
@@ -1147,20 +1400,20 @@ function generateReportCardHtml(studentId) {
         // Full Session Cumulative layout format
         subjectsTableHead = `
             <tr>
-                <th>Subject Name</th>
-                <th style="text-align: center;">1st Term (100)</th>
-                <th style="text-align: center;">2nd Term (100)</th>
-                <th style="text-align: center;">3rd Term CA (${state.settings.caWeight}%)</th>
-                <th style="text-align: center;">3rd Term Exam (${state.settings.examWeight}%)</th>
-                <th style="text-align: center;">3rd Term Total (100)</th>
-                <th style="text-align: center;">Cumulative Average</th>
-                <th style="text-align: center;">Session Grade</th>
-                <th style="text-align: center;">Subject Position</th>
-                <th style="text-align: center;">Remarks</th>
+                <th style="width: 22%;">Subject Name</th>
+                <th style="width: 8%; text-align: center;">1st (100)</th>
+                <th style="width: 8%; text-align: center;">2nd (100)</th>
+                <th style="width: 8%; text-align: center;">3rd CA (${state.settings.caWeight}%)</th>
+                <th style="width: 8%; text-align: center;">3rd Exam (${state.settings.examWeight}%)</th>
+                <th style="width: 9%; text-align: center;">3rd Total</th>
+                <th style="width: 12%; text-align: center;">Cum Avg</th>
+                <th style="width: 8%; text-align: center;">Grade</th>
+                <th style="width: 8%; text-align: center;">Position</th>
+                <th style="width: 9%; text-align: center;">Remarks</th>
             </tr>
         `;
 
-        state.subjects.forEach(sub => {
+        studentSubjects.forEach(sub => {
             const t1Score = (state.grades[studentId] && state.grades[studentId]['t1'] && state.grades[studentId]['t1'][sub.id] && state.grades[studentId]['t1'][sub.id].total) || '-';
             const t2Score = (state.grades[studentId] && state.grades[studentId]['t2'] && state.grades[studentId]['t2'][sub.id] && state.grades[studentId]['t2'][sub.id].total) || '-';
             const t3CA = (state.grades[studentId] && state.grades[studentId]['t3'] && state.grades[studentId]['t3'][sub.id] && state.grades[studentId]['t3'][sub.id].ca) || '-';
@@ -1206,29 +1459,26 @@ function generateReportCardHtml(studentId) {
         // Independent term layout format
         subjectsTableHead = `
             <tr>
-                <th>Subject Name</th>
-                <th style="text-align: center;">Continuous Assessment (${state.settings.caWeight}%)</th>
-                <th style="text-align: center;">Examination (${state.settings.examWeight}%)</th>
-                <th style="text-align: center;">Total Score (100)</th>
-                <th style="text-align: center;">Grade</th>
-                <th style="text-align: center;">Subject Position</th>
-                <th style="text-align: center;">Remarks</th>
+                <th style="width: 25%;">Subject Name</th>
+                <th style="width: 13%; text-align: center;">CA (${state.settings.caWeight}%)</th>
+                <th style="width: 13%; text-align: center;">Exam (${state.settings.examWeight}%)</th>
+                <th style="width: 13%; text-align: center;">Total Score (100)</th>
+                <th style="width: 10%; text-align: center;">Grade</th>
+                <th style="width: 11%; text-align: center;">Position</th>
+                <th style="width: 15%; text-align: center;">Remarks</th>
             </tr>
         `;
 
-        state.subjects.forEach(sub => {
-            const gradeObj = (state.grades[studentId] && state.grades[studentId][activeTerm] && state.grades[studentId][activeTerm][sub.id]) || {};
-            const caVal = gradeObj.ca !== undefined ? gradeObj.ca : '-';
-            const examVal = gradeObj.exam !== undefined ? gradeObj.exam : '-';
-            const totalVal = gradeObj.total !== undefined ? gradeObj.total : '-';
-            const gradeVal = gradeObj.grade !== undefined ? gradeObj.grade : '-';
+        studentSubjects.forEach(sub => {
+            const studentGrades = (state.grades[studentId] && state.grades[studentId][activeTerm]) || {};
+            const scoreObj = studentGrades[sub.id] || {};
             
-            let remark = '-';
-            if (gradeObj.grade) {
-                const match = state.settings.scale.find(s => s.grade === gradeObj.grade);
-                remark = match ? match.remark : '-';
-            }
-
+            const caVal = scoreObj.ca !== undefined ? scoreObj.ca : '-';
+            const examVal = scoreObj.exam !== undefined ? scoreObj.exam : '-';
+            const totalVal = scoreObj.total !== undefined ? scoreObj.total : '-';
+            const gradeVal = scoreObj.grade || '-';
+            const remark = scoreObj.grade ? ((state.settings.scale.find(s => s.grade === scoreObj.grade) || {}).remark || '-') : '-';
+            
             const subjectPos = getSubjectPosition(studentId, sub.id, activeTerm, false);
 
             subjectsRows += `
@@ -1287,11 +1537,12 @@ function generateReportCardHtml(studentId) {
             <div class="student-meta-grid">
                 <div class="meta-item"><strong>Student Name:</strong> ${student.name}</div>
                 <div class="meta-item"><strong>Class:</strong> ${cls.name}</div>
+                <div class="meta-item"><strong>Department:</strong> ${studentDept}</div>
                 <div class="meta-item"><strong>Student ID:</strong> ${student.id}</div>
-                <div class="meta-item"><strong>Total Subjects Offered:</strong> ${state.subjects.length}</div>
+                <div class="meta-item"><strong>Total Subjects Offered:</strong> ${studentSubjects.length}</div>
             </div>
 
-            <table>
+            <table style="width: 100%; table-layout: fixed; border-collapse: collapse;">
                 <thead>
                     ${subjectsTableHead}
                 </thead>
