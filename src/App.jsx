@@ -9,6 +9,7 @@ import StudentModal from './components/StudentModal'
 import SubjectModal from './components/SubjectModal'
 import ClassModal from './components/ClassModal'
 import CSVImportModal from './components/CSVImportModal'
+import TeacherModal from './components/TeacherModal'
 import AdminPortal from './views/AdminPortal'
 import SubjectTeacherPortal from './views/SubjectTeacherPortal'
 import ClassTeacherPortal from './views/ClassTeacherPortal'
@@ -25,6 +26,9 @@ import {
   saveStudentRecord,
   deleteStudentRecord,
   saveMultipleStudents,
+  saveTeacherRecord,
+  deleteTeacherRecord,
+  purgeAllDemoData,
   INITIAL_STATE
 } from './services/dataService'
 import { getActiveSession, loginUser, logoutUser } from './services/authService'
@@ -44,6 +48,8 @@ export default function App() {
   const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false)
   const [isClassModalOpen, setIsClassModalOpen] = useState(false)
   const [isCSVImportModalOpen, setIsCSVImportModalOpen] = useState(false)
+  const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false)
+  const [teacherToEdit, setTeacherToEdit] = useState(null)
   const [reportCardStudent, setReportCardStudent] = useState(null)
   const [batchPrintData, setBatchPrintData] = useState(null)
   const [isResultCheckerOpen, setIsResultCheckerOpen] = useState(false)
@@ -88,7 +94,12 @@ export default function App() {
 
   // Auth handlers
   const handleLogin = ({ username, password }) => {
-    const res = loginUser({ username, password, students: appState.students })
+    const res = loginUser({
+      username,
+      password,
+      students: appState.students,
+      teachers: appState.teachers || []
+    })
     if (res.success) {
       setCurrentUser(res.user)
       if (res.user.role === 'teacher') setActivePortal('subject')
@@ -252,6 +263,46 @@ export default function App() {
     showToast({ type: 'info', message: `Active term switched to ${termLabel}` })
   }
 
+  const handleSaveTeacher = async (teacherData) => {
+    const existingIdx = (appState.teachers || []).findIndex(t => t.id === teacherData.id)
+    let nextTeachers
+    if (existingIdx >= 0) {
+      nextTeachers = [...(appState.teachers || [])]
+      nextTeachers[existingIdx] = teacherData
+    } else {
+      nextTeachers = [...(appState.teachers || []), teacherData]
+    }
+
+    const nextState = { ...appState, teachers: nextTeachers }
+    setAppState(nextState)
+    await saveTeacherRecord(teacherData)
+    await saveAppState(nextState)
+    setIsTeacherModalOpen(false)
+    setTeacherToEdit(null)
+    showToast({
+      type: 'success',
+      message: `Staff account for "${teacherData.name}" saved successfully!`
+    })
+  }
+
+  const handleDeleteTeacher = async (teacherId) => {
+    const nextTeachers = (appState.teachers || []).filter(t => t.id !== teacherId)
+    const nextState = { ...appState, teachers: nextTeachers }
+    setAppState(nextState)
+    await deleteTeacherRecord(teacherId)
+    await saveAppState(nextState)
+    showToast({ type: 'info', message: 'Staff account deleted.' })
+  }
+
+  const handlePurgeAllData = async () => {
+    setIsLoading(true)
+    await purgeAllDemoData()
+    const cleanData = await loadAppState()
+    setAppState(cleanData)
+    setIsLoading(false)
+    showToast({ type: 'success', message: 'All demo data wiped clean! You have a fresh slate.' })
+  }
+
   const handleSaveRemarks = async ({
     studentId,
     termId,
@@ -342,6 +393,7 @@ export default function App() {
             classes={appState.classes}
             subjects={appState.subjects}
             students={appState.students}
+            teachers={appState.teachers || []}
             grades={appState.grades}
             activeTerm={appState.activeTerm}
             onChangeTerm={handleChangeTerm}
@@ -357,6 +409,12 @@ export default function App() {
             onOpenSubjectModal={() => setIsSubjectModalOpen(true)}
             onOpenStudentModal={() => setIsStudentModalOpen(true)}
             onOpenCSVImportModal={() => setIsCSVImportModalOpen(true)}
+            onOpenTeacherModal={(teacher) => {
+              setTeacherToEdit(teacher)
+              setIsTeacherModalOpen(true)
+            }}
+            onDeleteTeacher={handleDeleteTeacher}
+            onPurgeDemoData={handlePurgeAllData}
             onShowToast={showToast}
           />
         )}
@@ -370,6 +428,7 @@ export default function App() {
             activeTerm={appState.activeTerm}
             activeSession={appState.activeSession}
             settings={appState.settings}
+            currentUser={currentUser}
             onSaveGrades={handleSaveGrades}
             onOpenSubjectModal={() => setIsSubjectModalOpen(true)}
             onShowToast={showToast}
@@ -387,6 +446,7 @@ export default function App() {
             activeTerm={appState.activeTerm}
             activeSession={appState.activeSession}
             settings={appState.settings}
+            currentUser={currentUser}
             onOpenStudentModal={(clsId) => {
               setStudentModalClassId(clsId || '')
               setIsStudentModalOpen(true)
@@ -501,6 +561,20 @@ export default function App() {
           classes={appState.classes}
           onImportSuccess={handleImportStudents}
           onClose={() => setIsCSVImportModalOpen(false)}
+        />
+      )}
+
+      {/* 8. Add/Edit Teacher & Staff Modal */}
+      {isTeacherModalOpen && (
+        <TeacherModal
+          teacherToEdit={teacherToEdit}
+          classes={appState.classes}
+          subjects={appState.subjects}
+          onSave={handleSaveTeacher}
+          onClose={() => {
+            setIsTeacherModalOpen(false)
+            setTeacherToEdit(null)
+          }}
         />
       )}
     </div>

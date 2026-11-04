@@ -23,12 +23,15 @@ export default function SubjectTeacherPortal({
   activeTerm = 't1',
   activeSession = '2025/2026',
   settings = {},
+  currentUser = null,
   onSaveGrades,
   onOpenSubjectModal,
   onShowToast
 }) {
   const [selectedClassId, setSelectedClassId] = useState(classes[0]?.id || '')
-  const [selectedSubjectId, setSelectedSubjectId] = useState(subjects[0]?.id || '')
+  const [selectedSubjectId, setSelectedSubjectId] = useState(
+    currentUser?.assignedSubjectId || subjects[0]?.id || ''
+  )
   const [showAllClassStudents, setShowAllClassStudents] = useState(false)
   const [viewMode, setViewMode] = useState('table') // 'table' or 'card'
 

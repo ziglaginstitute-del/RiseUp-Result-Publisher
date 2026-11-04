@@ -2,83 +2,12 @@ import { supabase, isSupabaseConfigured } from './supabaseClient.js'
 
 const LOCAL_STORAGE_KEY = 'riseup_results_publisher_state_v2'
 
-// Default Nigerian secondary school seed data (RiseUp College)
+// Clean Initial State for RiseUp College
 export const INITIAL_STATE = {
-  classes: [
-    { id: 'c1', name: 'Grade 10A', level: 'Senior' },
-    { id: 'c2', name: 'Grade 11B', level: 'Senior' },
-    { id: 'c3', name: 'JSS 1A', level: 'Junior' }
-  ],
-  subjects: [
-    { id: 's1', name: 'Mathematics', code: 'MTH', department: 'General' },
-    { id: 's2', name: 'English Language', code: 'ENG', department: 'General' },
-    { id: 's3', name: 'Chemistry', code: 'CHM', department: 'Science' },
-    { id: 's4', name: 'Physics', code: 'PHY', department: 'Science' },
-    { id: 's5', name: 'Economics', code: 'ECO', department: 'Arts & Commercial' },
-    { id: 's6', name: 'Literature in English', code: 'LIT', department: 'Art' },
-    { id: 's7', name: 'Government', code: 'GOV', department: 'Arts & Commercial' },
-    { id: 's8', name: 'Financial Accounting', code: 'ACC', department: 'Commercial' },
-    { id: 's9', name: 'Biology', code: 'BIO', department: 'Science' },
-    { id: 's10', name: 'Civic Education', code: 'CIV', department: 'General' },
-    { id: 's11', name: 'Computer Studies', code: 'CMP', department: 'Elective' },
-    { id: 's12', name: 'Agricultural Science', code: 'AGR', department: 'Elective' },
-    { id: 's13', name: 'Basic Science', code: 'BSC', department: 'Junior' },
-    { id: 's14', name: 'Basic Technology', code: 'BTC', department: 'Junior' },
-    { id: 's15', name: 'Social Studies', code: 'SOS', department: 'Junior' },
-    { id: 's16', name: 'Business Studies', code: 'BUS', department: 'Junior' }
-  ],
-  students: [
-    { id: 'st1', reg_no: 'RC/2026/001', name: 'Chinedu Okafor', classId: 'c1', department: 'Science', access_pin: '8821', gender: 'M' },
-    { id: 'st2', reg_no: 'RC/2026/002', name: 'Amina Yusuf', classId: 'c1', department: 'Art', access_pin: '4412', gender: 'F' },
-    { id: 'st3', reg_no: 'RC/2026/003', name: 'Tunde Bakare', classId: 'c1', department: 'Commercial', access_pin: '9103', gender: 'M' },
-    { id: 'st4', reg_no: 'RC/2026/004', name: 'Elizabeth Adebayo', classId: 'c1', department: 'Science', access_pin: '5529', gender: 'F' },
-    { id: 'st5', reg_no: 'RC/2026/005', name: 'John Peterson', classId: 'c2', department: 'Science', access_pin: '7311', gender: 'M' },
-    { id: 'st6', reg_no: 'RC/2026/006', name: 'Fatima Umar', classId: 'c2', department: 'Art', access_pin: '3284', gender: 'F' },
-    { id: 'st7', reg_no: 'RC/2026/007', name: 'Blessing Eze', classId: 'c3', department: 'Junior', access_pin: '6045', gender: 'F' }
-  ],
-  grades: {
-    'st1': {
-      't1': {
-        's1': { ca: 34, exam: 52, total: 86, grade: 'A1', remark: 'Excellent' },
-        's2': { ca: 31, exam: 48, total: 79, grade: 'A1', remark: 'Excellent' },
-        's3': { ca: 36, exam: 50, total: 86, grade: 'A1', remark: 'Excellent' },
-        's4': { ca: 32, exam: 45, total: 77, grade: 'A1', remark: 'Excellent' },
-        's9': { ca: 30, exam: 42, total: 72, grade: 'B2', remark: 'Very Good' },
-        's10': { ca: 35, exam: 45, total: 80, grade: 'A1', remark: 'Excellent' },
-        's11': { ca: 37, exam: 54, total: 91, grade: 'A1', remark: 'Excellent' }
-      }
-    },
-    'st2': {
-      't1': {
-        's1': { ca: 28, exam: 40, total: 68, grade: 'B3', remark: 'Good' },
-        's2': { ca: 35, exam: 50, total: 85, grade: 'A1', remark: 'Excellent' },
-        's5': { ca: 32, exam: 44, total: 76, grade: 'A1', remark: 'Excellent' },
-        's6': { ca: 36, exam: 52, total: 88, grade: 'A1', remark: 'Excellent' },
-        's7': { ca: 30, exam: 45, total: 75, grade: 'A1', remark: 'Excellent' },
-        's10': { ca: 33, exam: 46, total: 79, grade: 'A1', remark: 'Excellent' }
-      }
-    },
-    'st3': {
-      't1': {
-        's1': { ca: 25, exam: 38, total: 63, grade: 'C4', remark: 'Credit' },
-        's2': { ca: 29, exam: 41, total: 70, grade: 'B2', remark: 'Very Good' },
-        's5': { ca: 35, exam: 48, total: 83, grade: 'A1', remark: 'Excellent' },
-        's7': { ca: 28, exam: 42, total: 70, grade: 'B2', remark: 'Very Good' },
-        's8': { ca: 34, exam: 50, total: 84, grade: 'A1', remark: 'Excellent' },
-        's10': { ca: 30, exam: 42, total: 72, grade: 'B2', remark: 'Very Good' }
-      }
-    },
-    'st7': {
-      't1': {
-        's1': { ca: 30, exam: 45, total: 75, grade: 'A1', remark: 'Excellent' },
-        's2': { ca: 33, exam: 47, total: 80, grade: 'A1', remark: 'Excellent' },
-        's13': { ca: 35, exam: 49, total: 84, grade: 'A1', remark: 'Excellent' },
-        's14': { ca: 31, exam: 46, total: 77, grade: 'A1', remark: 'Excellent' },
-        's15': { ca: 34, exam: 48, total: 82, grade: 'A1', remark: 'Excellent' },
-        's16': { ca: 32, exam: 45, total: 77, grade: 'A1', remark: 'Excellent' }
-      }
-    }
-  },
+  classes: [],
+  subjects: [],
+  students: [],
+  grades: {},
   activeTerm: 't1',
   activeSession: '2025/2026',
   sessions: ['2024/2025', '2025/2026', '2026/2027'],
@@ -110,30 +39,18 @@ export const INITIAL_STATE = {
       { grade: 'F9', min: 0, max: 39, remark: 'FAIL' }
     ]
   },
-  remarks: {
-    'st1': {
-      't1': {
-        teacherComment: 'Praise shows maturity when solving problems with classmates and uses good communication.',
-        principalComment: 'This is a fantastic academic result. Work harder next term to improve your grade in Mathematics and Economics.',
-        decision: 'COMMENDED',
-        timesOpened: 124,
-        timesPresent: 110,
-        timesAbsent: 14,
-        nextTermBegins: '12th Jan., 2026',
-        reportDate: '19th December, 2025'
-      },
-      't3': {
-        teacherComment: 'She is very calm and works hard to meet goals.',
-        principalComment: 'You have demonstrated excellence. Keep striving for even greater success as you journey through the last lap of the secondary school.',
-        decision: 'PROMOTED TO DIVISION SIX',
-        timesOpened: 94,
-        timesPresent: 92,
-        timesAbsent: 2,
-        nextTermBegins: '14th Sept, 2026',
-        reportDate: '17th July, 2026'
-      }
+  remarks: {},
+  teachers: [
+    {
+      id: 'admin_user',
+      username: 'admin',
+      password: 'adminpassword',
+      role: 'admin',
+      name: 'School Administrator',
+      assignedClassId: null,
+      assignedSubjectId: null
     }
-  }
+  ]
 }
 
 /**
@@ -143,12 +60,13 @@ export const INITIAL_STATE = {
 export async function loadAppState() {
   if (isSupabaseConfigured() && supabase) {
     try {
-      const [classesRes, subjectsRes, studentsRes, gradesRes, settingsRes] = await Promise.all([
+      const [classesRes, subjectsRes, studentsRes, gradesRes, settingsRes, usersRes] = await Promise.all([
         supabase.from('classes').select('*'),
         supabase.from('subjects').select('*'),
         supabase.from('students').select('*'),
         supabase.from('grades').select('*'),
-        supabase.from('school_settings').select('*')
+        supabase.from('school_settings').select('*'),
+        supabase.from('app_users').select('*')
       ])
 
       if (!classesRes.error && !subjectsRes.error && !studentsRes.error) {
@@ -192,11 +110,38 @@ export async function loadAppState() {
           gender: st.gender || 'M'
         }))
 
+        // Map staff accounts
+        let teachers = (usersRes?.data || [])
+          .filter(u => ['admin', 'class_teacher', 'teacher'].includes(u.role))
+          .map(u => ({
+            id: u.id,
+            username: u.username,
+            password: u.password,
+            role: u.role,
+            name: u.full_name || u.name,
+            assignedClassId: u.assigned_class_id,
+            assignedSubjectId: u.assigned_subject_id,
+            createdAt: u.created_at
+          }))
+
+        if (!teachers.some(t => t.role === 'admin')) {
+          teachers.unshift({
+            id: 'admin_user',
+            username: 'admin',
+            password: 'adminpassword',
+            role: 'admin',
+            name: 'School Administrator',
+            assignedClassId: null,
+            assignedSubjectId: null
+          })
+        }
+
         const stateObj = {
           classes: classesRes.data || [],
           subjects: subjectsRes.data || [],
           students: mappedStudents,
           grades: gradesMap,
+          teachers,
           activeTerm,
           activeSession,
           sessions,
@@ -222,6 +167,7 @@ export async function loadAppState() {
       return {
         ...INITIAL_STATE,
         ...parsed,
+        teachers: parsed.teachers || INITIAL_STATE.teachers || [],
         remarks: parsed.remarks || INITIAL_STATE.remarks || {},
         settings: { ...INITIAL_STATE.settings, ...(parsed.settings || {}) },
         isCloudConnected: false
@@ -435,4 +381,66 @@ export async function deleteStudentRecord(studentId) {
     }
   }
   return { success: true }
+}
+
+/**
+ * Saves or updates a teacher/staff member in Supabase cloud
+ */
+export async function saveTeacherRecord(teacher) {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase.from('app_users').upsert({
+        id: teacher.id,
+        username: teacher.username.trim().toLowerCase(),
+        password: teacher.password.trim(),
+        role: teacher.role,
+        full_name: teacher.name,
+        assigned_class_id: teacher.assignedClassId || null,
+        assigned_subject_id: teacher.assignedSubjectId || null
+      }).select()
+      if (error) console.error('Supabase saveTeacherRecord error:', error)
+      return { success: !error, error, data }
+    } catch (err) {
+      console.warn('Failed saving teacher to Supabase:', err)
+      return { success: false, error: err }
+    }
+  }
+  return { success: true }
+}
+
+/**
+ * Deletes a teacher/staff member from Supabase cloud
+ */
+export async function deleteTeacherRecord(teacherId) {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { error } = await supabase.from('app_users').delete().eq('id', teacherId)
+      if (error) console.error('Supabase deleteTeacherRecord error:', error)
+      return { success: !error, error }
+    } catch (err) {
+      console.warn('Failed deleting teacher from Supabase:', err)
+      return { success: false, error: err }
+    }
+  }
+  return { success: true }
+}
+
+/**
+ * Completely purges mock/sample data from Supabase and resets state
+ */
+export async function purgeAllDemoData() {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      await Promise.all([
+        supabase.from('grades').delete().neq('id', '___none___'),
+        supabase.from('students').delete().neq('id', '___none___'),
+        supabase.from('subjects').delete().neq('id', '___none___'),
+        supabase.from('classes').delete().neq('id', '___none___'),
+        supabase.from('app_users').delete().neq('role', 'admin')
+      ])
+    } catch (err) {
+      console.warn('Failed purging Supabase demo data:', err)
+    }
+  }
+  localStorage.removeItem(LOCAL_STORAGE_KEY)
 }

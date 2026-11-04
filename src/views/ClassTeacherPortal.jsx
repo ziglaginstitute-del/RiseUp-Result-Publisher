@@ -32,11 +32,14 @@ export default function ClassTeacherPortal({
   activeTerm = 't1',
   activeSession = '2025/2026',
   settings = {},
+  currentUser = null,
   onOpenStudentModal,
   onOpenReportCard,
   onOpenBatchPrint
 }) {
-  const [selectedClassId, setSelectedClassId] = useState(classes[0]?.id || '')
+  const [selectedClassId, setSelectedClassId] = useState(
+    currentUser?.assignedClassId || classes[0]?.id || ''
+  )
   const [selectedDeptFilter, setSelectedDeptFilter] = useState('') // '', 'Science', 'Art', 'Commercial', 'Junior', 'General'
   const [isFullscreen, setIsFullscreen] = useState(false)
 

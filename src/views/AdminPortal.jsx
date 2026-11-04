@@ -13,7 +13,14 @@ import {
   CheckCircle,
   Save,
   ShieldAlert,
-  Upload
+  Upload,
+  UserCheck,
+  UserPlus,
+  Eye,
+  EyeOff,
+  Copy,
+  Edit2,
+  AlertTriangle
 } from 'lucide-react'
 import { getDeptBadgeColor } from '../utils/gradeCalculator'
 import { exportStudentsToCSV } from '../utils/csvExporter'
@@ -22,6 +29,7 @@ export default function AdminPortal({
   classes = [],
   subjects = [],
   students = [],
+  teachers = [],
   grades = {},
   activeTerm = 't1',
   onChangeTerm,
@@ -37,12 +45,16 @@ export default function AdminPortal({
   onOpenSubjectModal,
   onOpenStudentModal,
   onOpenCSVImportModal,
+  onOpenTeacherModal,
+  onDeleteTeacher,
+  onPurgeDemoData,
   onShowToast
 }) {
-  const [activeTab, setActiveTab] = useState('students') // 'students', 'classes', 'subjects', 'grading', 'school'
+  const [activeTab, setActiveTab] = useState('students') // 'students', 'classes', 'subjects', 'teachers', 'grading', 'school'
   const [studentSearch, setStudentSearch] = useState('')
   const [studentClassFilter, setStudentClassFilter] = useState('')
   const [studentDeptFilter, setStudentDeptFilter] = useState('')
+  const [showPasswords, setShowPasswords] = useState({})
 
   // Settings form states
   const [currentTerm, setCurrentTerm] = useState(activeTerm)
@@ -169,6 +181,7 @@ export default function AdminPortal({
           { id: 'students', label: 'Student Register', icon: Users, count: students.length },
           { id: 'classes', label: 'Classes', icon: GraduationCap, count: classes.length },
           { id: 'subjects', label: 'Subjects', icon: BookOpen, count: subjects.length },
+          { id: 'teachers', label: 'Staff Accounts', icon: UserCheck, count: teachers.length },
           { id: 'grading', label: 'Grading Scale & Weights', icon: Award },
           { id: 'school', label: 'School Information', icon: CheckCircle }
         ].map(tab => {
@@ -438,6 +451,166 @@ export default function AdminPortal({
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB: STAFF & TEACHER ACCOUNTS */}
+      {activeTab === 'teachers' && (
+        <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <UserCheck className="w-5 h-5 text-sky-400" />
+                <span>Teacher & Staff Access Accounts</span>
+              </h3>
+              <p className="text-xs text-slate-400">
+                Create individual login usernames and passwords for Class Teachers and Subject Teachers
+              </p>
+            </div>
+
+            <button
+              onClick={() => onOpenTeacherModal && onOpenTeacherModal(null)}
+              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-sky-600/20 transition-all cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Add Staff Member</span>
+            </button>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-slate-700/60">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-slate-900/80 text-slate-400 font-semibold uppercase tracking-wider text-[11px] border-b border-slate-700/60">
+                <tr>
+                  <th className="p-3">Staff Name</th>
+                  <th className="p-3">Access Role</th>
+                  <th className="p-3">Login Username</th>
+                  <th className="p-3">Password</th>
+                  <th className="p-3">Assigned Class / Subject</th>
+                  <th className="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800 bg-slate-900/40 font-medium">
+                {teachers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-slate-500 italic">
+                      No staff accounts created yet. Click &quot;Add Staff Member&quot; to provide login access to teachers.
+                    </td>
+                  </tr>
+                ) : (
+                  teachers.map(teacher => {
+                    const isPwdVisible = Boolean(showPasswords[teacher.id])
+                    const assignedClass = classes.find(c => c.id === teacher.assignedClassId)
+                    const assignedSubject = subjects.find(s => s.id === teacher.assignedSubjectId)
+
+                    return (
+                      <tr key={teacher.id} className="hover:bg-slate-800/40 transition-colors">
+                        <td className="p-3 font-bold text-white flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-sky-400">
+                            {(teacher.name || teacher.username || 'T').charAt(0).toUpperCase()}
+                          </div>
+                          <span>{teacher.name}</span>
+                        </td>
+                        <td className="p-3">
+                          {teacher.role === 'admin' && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                              Administrator
+                            </span>
+                          )}
+                          {teacher.role === 'class_teacher' && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              Class Teacher
+                            </span>
+                          )}
+                          {teacher.role === 'teacher' && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                              Subject Teacher
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-800 rounded-lg border border-slate-700 font-mono text-xs text-sky-300">
+                            <span>@{teacher.username}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(teacher.username)
+                                onShowToast && onShowToast({ type: 'info', message: `Copied username "@${teacher.username}"` })
+                              }}
+                              className="text-slate-400 hover:text-white"
+                              title="Copy Username"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div className="inline-flex items-center gap-2 bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700 font-mono text-xs text-slate-200">
+                            <span>{isPwdVisible ? teacher.password : '••••••••'}</span>
+                            <button
+                              type="button"
+                              onClick={() => setShowPasswords(prev => ({ ...prev, [teacher.id]: !prev[teacher.id] }))}
+                              className="text-slate-400 hover:text-white"
+                              title={isPwdVisible ? 'Hide Password' : 'Show Password'}
+                            >
+                              {isPwdVisible ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(teacher.password)
+                                onShowToast && onShowToast({ type: 'info', message: 'Copied password to clipboard' })
+                              }}
+                              className="text-slate-400 hover:text-white"
+                              title="Copy Password"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-3 text-slate-300">
+                          {teacher.role === 'class_teacher' && (
+                            <span>{assignedClass ? `Class: ${assignedClass.name}` : 'All Classes'}</span>
+                          )}
+                          {teacher.role === 'teacher' && (
+                            <span>{assignedSubject ? `Subject: ${assignedSubject.name}` : 'All Subjects'}</span>
+                          )}
+                          {teacher.role === 'admin' && (
+                            <span className="text-slate-500 italic">Entire School</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              type="button"
+                              onClick={() => onOpenTeacherModal && onOpenTeacherModal(teacher)}
+                              className="p-1.5 text-slate-400 hover:text-sky-400 hover:bg-sky-500/10 rounded-lg transition-colors cursor-pointer"
+                              title="Edit Staff Member"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            {teacher.role !== 'admin' && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (window.confirm(`Delete staff account for "${teacher.name}" (@${teacher.username})?`)) {
+                                    onDeleteTeacher && onDeleteTeacher(teacher.id)
+                                  }
+                                }}
+                                className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Staff Account"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -720,6 +893,32 @@ export default function AdminPortal({
               <span>Save School Details</span>
             </button>
           </form>
+
+          {/* Danger Zone: Clear Demo / Mock Data */}
+          <div className="pt-6 mt-8 border-t border-slate-700/80 max-w-xl">
+            <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20 space-y-3">
+              <div>
+                <h4 className="text-sm font-bold text-red-400 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>Start Fresh: Purge All Demo Data</span>
+                </h4>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  Permanently wipe all demo students, demo subjects, demo classes, and demo grades from your Supabase database and local storage. Your administrator account is preserved so you can enter your real school data from scratch.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to completely purge all demo students, subjects, classes, and grades from Supabase and local storage?\n\nThis action cannot be undone. You will start with a 100% clean slate.')) {
+                    onPurgeDemoData && onPurgeDemoData()
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                Purge All Demo Data Now
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

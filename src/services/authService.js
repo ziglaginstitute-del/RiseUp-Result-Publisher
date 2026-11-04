@@ -36,26 +36,51 @@ export function getActiveSession() {
   return null
 }
 
-export function loginUser({ username, password, students = [] }) {
+export function loginUser({ username, password, students = [], teachers = [] }) {
   const cleanUsername = username.trim().toLowerCase()
   const cleanPassword = password.trim()
 
-  // 1. Check pre-configured staff accounts
-  const staff = DEFAULT_USERS.find(
+  // 1. Check registered teachers and staff accounts
+  const allStaff = teachers && teachers.length > 0 ? teachers : DEFAULT_USERS
+  const staff = allStaff.find(
     u => u.username.toLowerCase() === cleanUsername && u.password === cleanPassword
   )
   if (staff) {
+    const roleLabel =
+      staff.roleLabel ||
+      (staff.role === 'admin'
+        ? 'School Administrator'
+        : staff.role === 'class_teacher'
+        ? 'Class Teacher'
+        : 'Subject Teacher')
+
     const sessionData = {
+      id: staff.id,
       username: staff.username,
-      name: staff.name,
+      name: staff.name || staff.full_name,
       role: staff.role,
-      roleLabel: staff.roleLabel,
-      assignedClassId: staff.assignedClassId || null,
-      assignedSubjectId: staff.assignedSubjectId || null,
+      roleLabel,
+      assignedClassId: staff.assignedClassId || staff.assigned_class_id || null,
+      assignedSubjectId: staff.assignedSubjectId || staff.assigned_subject_id || null,
       studentId: null
     }
     localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData))
     return { success: true, user: sessionData }
+  }
+
+  // Fallback for primary admin
+  if (cleanUsername === 'admin' && cleanPassword === 'adminpassword') {
+    const adminSession = {
+      username: 'admin',
+      name: 'School Administrator',
+      role: 'admin',
+      roleLabel: 'School Coordinator',
+      assignedClassId: null,
+      assignedSubjectId: null,
+      studentId: null
+    }
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(adminSession))
+    return { success: true, user: adminSession }
   }
 
   // 2. Check student accounts (using Student ID or Reg Number, and PIN or last name)
