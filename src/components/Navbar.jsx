@@ -1,5 +1,5 @@
-import React from 'react'
-import { Calendar, Cloud, HardDrive, CheckCircle2, Bookmark } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Calendar, Cloud, HardDrive, Download } from 'lucide-react'
 
 export default function Navbar({
   title,
@@ -11,6 +11,26 @@ export default function Navbar({
   onChangeTerm,
   isCloudConnected
 }) {
+  const [deferredPrompt, setDeferredPrompt] = useState(null)
+
+  useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+  }, [])
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null)
+    }
+  }
+
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
       <div>
@@ -19,6 +39,17 @@ export default function Navbar({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
+        {/* PWA Install App Button (Auto-appears on Chrome / Edge / Android) */}
+        {deferredPrompt && (
+          <button
+            onClick={handleInstallClick}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-sky-500/20 text-sky-400 border border-sky-500/40 hover:bg-sky-500/30 transition-all cursor-pointer shadow-sm animate-pulse"
+            title="Install RiseUp College as an application on this device"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Install App</span>
+          </button>
+        )}
         {/* Backend Cloud Sync Status Pill */}
         <div
           title={

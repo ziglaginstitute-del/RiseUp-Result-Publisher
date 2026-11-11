@@ -494,7 +494,7 @@ with app.app_context():
         ]
         db.session.add(Setting(key='scale', value=new_scale))
         db.session.add(Setting(key='caWeight', value=40))
-        db.session.add(Setting(key='examWeight', value=60))
+        db.session.add(Setting(key='examWeight', value=60)) 
         db.session.add(Setting(key='activeSession', value='2025/2026'))
         db.session.add(Setting(key='sessions', value=['2025/2026']))
         
