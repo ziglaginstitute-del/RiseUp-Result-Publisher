@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Calendar, Cloud, HardDrive, Download } from 'lucide-react'
+import { Calendar, Cloud, HardDrive, Download, Bookmark } from 'lucide-react'
 
 export default function Navbar({
   title,

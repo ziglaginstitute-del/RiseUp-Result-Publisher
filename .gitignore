@@ -38,3 +38,4 @@ ENV/
 Thumbs.db
 .vscode/
 .idea/
+pyrefly.toml

@@ -1,5 +1,5 @@
 // RiseUp College Results Publisher - Production Service Worker
-const CACHE_NAME = 'riseup-publisher-v3';
+const CACHE_NAME = 'riseup-publisher-v4';
 const APP_SHELL = [
   '/',
   '/index.html',

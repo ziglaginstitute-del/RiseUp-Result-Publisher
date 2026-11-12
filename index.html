@@ -21,7 +21,9 @@
       // Register Service Worker for PWA (Installable on Android, Windows & Mac)
       if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch((err) => {
+          navigator.serviceWorker.register('/sw.js').then((registration) => {
+            registration.update();
+          }).catch((err) => {
             console.log('SW registration note:', err);
           });
         });
