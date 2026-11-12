@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="./RiseUp Logo.png" />
-    <link rel="apple-touch-icon" href="./RiseUp Logo.png" />
-    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" type="image/png" href="/RiseUp Logo.png" />
+    <link rel="apple-touch-icon" href="/RiseUp Logo.png" />
+    <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0284c7" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="RiseUp College Academic Results Management & Student Report Card Publishing System" />
@@ -21,7 +21,7 @@
       // Register Service Worker for PWA (Installable on Android, Windows & Mac)
       if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js').catch((err) => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
             console.log('SW registration note:', err);
           });
         });

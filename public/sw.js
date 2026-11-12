@@ -1,13 +1,12 @@
 // RiseUp College Results Publisher - Production Service Worker
-const CACHE_NAME = 'riseup-publisher-v2';
+const CACHE_NAME = 'riseup-publisher-v3';
 const APP_SHELL = [
-  './',
-  './index.html',
-  './manifest.json',
-  './RiseUp Logo.png'
+  '/',
+  '/index.html',
+  '/manifest.json'
 ];
 
-// Install: Cache critical assets
+// Install: Cache critical shell assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
@@ -51,7 +50,7 @@ self.addEventListener('fetch', (event) => {
         return caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) return cachedResponse;
           if (event.request.headers.get('accept')?.includes('text/html')) {
-            return caches.match('./index.html');
+            return caches.match('/index.html');
           }
         });
       })
